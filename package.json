@@ -1,0 +1,22 @@
+{
+  "name": "100-upiitenses-dijeron",
+  "version": "1.0.0",
+  "description": "Proyecto para la materia de Etica para el ejercicio profesional",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/josuegtello/100-upiitenses-dijeron.git"
+  },
+  "keywords": [
+    "Etica"
+  ],
+  "author": "Gerardo Josue Guzman Tello <josuegtello2@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/josuegtello/100-upiitenses-dijeron/issues"
+  },
+  "homepage": "https://github.com/josuegtello/100-upiitenses-dijeron#readme"
+}
