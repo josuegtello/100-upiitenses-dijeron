@@ -18,5 +18,11 @@
   "bugs": {
     "url": "https://github.com/josuegtello/100-upiitenses-dijeron/issues"
   },
-  "homepage": "https://github.com/josuegtello/100-upiitenses-dijeron#readme"
+  "homepage": "https://github.com/josuegtello/100-upiitenses-dijeron#readme",
+  "type": "module",
+  "dependencies": {
+    "express": "^5.1.0",
+    "morgan": "^1.10.1",
+    "ws": "^8.18.3"
+  }
 }
