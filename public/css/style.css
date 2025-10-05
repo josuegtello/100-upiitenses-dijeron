@@ -1,3 +1,89 @@
+/*despues de custom properties y reseteo empezar con la cabecera*/
+/*******Custom Properties*******/
+:root {
+    /*Paleta de Colores*/
+    --numeros:#fff8a9;
+    --letras:#c5ef81;
+    --tablero:#939588;
+    --bg-respuestas:#222514;
+    --decoracion:#fff6ff;
+    --bg:#88474b;
+    --bg-numeros:#040500;
+
+    /*Definicion de tipografias*/
+    --font-title: "Orbitron", sans-serif;
+    --font-text: "Lexend Deca", sans-serif;
+    --font:sans-serif;
+
+    /*alto de la cabecera*/
+    --header-height:4rem; 
+    /*Cards Projects*/
+    --s: 700ms;
+    --e: cubic-bezier(0.19, 1, 0.22, 1);
+}
+/*********Reseto CSS*********/
+/*reseteado de modelo de caja*/
+html {
+    box-sizing: border-box;
+    font-family:var(--font-text);
+    font-size:16px;/*definir explicitamente lo que va a equivaler 1rem*/
+    scroll-behavior: smooth;/*efecto de animacion del scroll*/
+}
+*,*::after,*::before{
+    box-sizing: inherit;    
+}
 body{
-    background-color: red;
+    margin:0;
+    color:var(--text-color-3);
+    background-color:var(--bg-color);
+    overflow-x: hidden;
+}
+
+/*enlaces*/
+a {
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.5s ease-out;
+}
+svg {
+    height: auto;
+    transition: all 0.5s ease-out;
+}
+/*tamaños de tipografias en rems, 
+recomendable editar el margin para que despues podamos agregarlo explicitamente*/
+h1  {
+    margin:0;
+    font-size:2rem;
+}
+h2 {
+    margin:0;
+    font-size:1.5rem;
+}
+h3 {
+    margin:0;
+    font-size:1.25rem;
+}
+h4 {
+    margin:0;
+    font-size:1rem;
+}
+h5 {
+    margin:0;
+    font-size:.85rem;
+}
+h6 {
+    margin:0;
+    font-size:.7rem;
+}
+img, video, audio {
+    max-width:100%;
+    height:auto;
+}
+iframe {
+    max-width:100%;
+}
+p { /*altura de la linea sea de 1.6, 
+    tiene que ver un poco con el tamaño de la letra, como un interlineado*/
+    line-height: 1.1;
+    margin: 0;
 }
