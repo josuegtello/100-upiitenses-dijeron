@@ -37,6 +37,10 @@
     color: #FFFFFF;
 }
 
+.contenedorpreguntas>button:hover {
+
+    transform: scale(1.2);
+}
 .contenedorpreguntas>p {
     display: flex;
     flex-direction: row;
@@ -88,9 +92,17 @@
     height: 60px;
     border: none;
     border-radius: 8px;
+    font-size: 25px;
+    }
+    
+    .primary {
     color: white;
     background-color: #ff0080;
-    font-size: 25px;
+}
+
+.wrong {
+    color: white;
+    background-color: red;
 }
 
 .contenedoresbotones>button:hover {
@@ -136,6 +148,7 @@
 
 
 }
+
 
 .contendorespuestas>p {
     width: 95%;

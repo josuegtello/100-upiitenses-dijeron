@@ -7,6 +7,7 @@ import path from "path";
 import morgan from "morgan";
 import getLocalIpAddress from "./middlewares/ip.js";
 
+
 // Definicion de __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
