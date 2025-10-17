@@ -122,56 +122,27 @@ function addStrikes() {
             team2.strikes++;
         }
     } else {
-        currentSelectionIndex++;
-        renderTeamById(currentSelectionIndex);
-        contadorDeSeleccion++;
-        if (contadorDeSeleccion >= 3) {
-            teamspostproceded.sort((a, b) => b.current_score - a.current_score);
-            renderTeamById(teamspostproceded[0])
-            selecionDeEquipos = false;
-        }
+
+
+
+
     }
 }
 
 function addScore(id) {
     const ans = ronda.respuestas.find(t => t.id === Number(id));
     if (selecionDeEquipos) {
-        console.log({ currentSelectionIndex });
-        currentTeam = teamspostproceded[contadorDeSeleccion];
-
-        if ((currentSelectionIndex < 2)) {
-            console.log("entra al if va a suceder otra vez");
-            console.log(currentTeam);
-            currentSelectionIndex++;
-            console.log({ currentSelectionIndex });
-            renderTeamById(teamspostproceded[currentSelectionIndex].id_local);
-        }
-        currentTeam.current_score = ans.score;
         if (id === 1) {
-            console.log("entro al if de id == 1")
-            currentTeam.current_score = ans.score;
-            teamspostproceded.sort((a, b) => b.current_score - a.current_score);
-            currentTeam = teamspostproceded[0];
-            renderTeamById(currentTeam.id_local);
-            console.log(teamspostproceded);
-            console.log(currentTeam.name);
-            selecionDeEquipos = false;
-            return;
+            console.log("Entro al if");
         }
-        contadorDeSeleccion++;
-        console.log({ contadorDeSeleccion });
+        currentTeam.score += pregunta[id].score;
+        renderIndex++;
+        currentTeam = teamspostproceded[renderIndex];
+        renderTeamById(currentTeam.id_local);
+        if (renderIndex > 2) {
 
-        if (contadorDeSeleccion >= 3) {
-            console.log("entro al controlador de limite ");
-            teamspostproceded.sort((a, b) => b.current_score - a.current_score);
-            console.log(teamspostproceded);
-            currentTeam = teamspostproceded[0];
-            renderTeamById(currentTeam.id_local);
-            selecionDeEquipos = false;
-            console.log(currentTeam.name);
-            return;
-        }
 
+}
 
     }
 
@@ -194,9 +165,8 @@ function asignRondaScore() {
 
 let currentTeam = teamspostproceded.find((t) => t.id_local === 1);
 let selecionDeEquipos = true;
-let contadorDeSeleccion = 0;
-let currentSelectionIndex = 0; //lo que modifique du/dx
-let contadorPreguntas = 0;
+let renderIndex = 1;
+
 function initController() {
     const leftquestionBtn = document.getElementById("leftquestionBtn");
     const rightquestionshowBtn = document.getElementById("rightquestionshowBtn");
