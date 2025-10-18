@@ -34,7 +34,7 @@ const ronda = {
     respuestas: [
         { id: 1, texto: "Respuesta 1", score: 65 },
         { id: 2, texto: "Respuesta 2", score: 60 },
-        { id: 3, texto: "Respuesta 3", score: 55 },
+        { id: 3, texto: "Respuesta 3", score: 58 },
         { id: 4, texto: "Respuesta 4", score: 44 },
         { id: 5, texto: "Respuesta 5", score: 32 },
     ],
@@ -82,48 +82,69 @@ function renderTeamById(_id_local) {
    
     `;
 }
+function startCountdown() {
+    unableButton();
+    setTimeout(() => {
+
+        ableButton();
+    }, 3000);
+}
+
+function unableButton() {
+    wrongBtn.style.pointerEvents = 'none';
+    wrongBtn.style.backgroundColor = '#8c8c8cff';
+}
+
+function ableButton() {
+    wrongBtn.style.pointerEvents = 'auto';
+    wrongBtn.style.backgroundColor = '#ff0000ff';
+}
 
 
 
 function addStrikes() {
     if (!selecionDeEquipos) {
+        console.log(
+            "patrulla"
+        )
         console.log(teamspostproceded)
         const team1 = teamspostproceded[0];
         const team2 = teamspostproceded[1];
         const team3 = teamspostproceded[2];
 
+
+
+        if (team1.strikes >= 3 && team2.strikes >= 1 && team3.strikes < 1) {
+            team3.strikes++;
+        }
         if (team1.strikes >= 3 && team2.strikes >= 1 && team3.strikes >= 1) {
-            currentTeam = teamspostproceded.find((t) => t.id_local === 1);
-            asignRondaScore();
-            renderTeamById(currentTeam.id_local);
+
+            renderTeamById(team1.id_local);
+            asignRondaScoreToFirst();
 
             return;
+        }
+        if (team1.strikes >= 3 && team2.strikes < 1) {
+            team2.strikes++;
+        }
+        if (team2.strikes >= 1 && team3.strikes < 1) {
+            renderTeamById(team3.id_local);
         }
 
         if (team1.strikes < 3) {
             team1.strikes++;
         }
-        if (team2.strikes >= 1 && team3.strikes < 1) {
-            renderTeamById(team3.id_local);
-            currentTeam = teamspostproceded.find((t) => t.id_local === 3);
-            asignRondaScore();
-            renderTeamById(currentTeam.id_local);
-        }
-        if (team1.strikes >= 3 && team2.strikes >= 1 && team3.strikes < 1) {
-            team3.strikes++;
-        }
         if (team1.strikes >= 3 && team2.strikes < 1) {
-            currentTeam = teamspostproceded.find((t) => t.id_local === 2);
-            asignRondaScore();
-            renderTeamById(currentTeam.id_local);
-            team2.strikes++;
+            renderTeamById(team2.id_local);
+
         }
     } else {
         renderIndex++;
+        renderTeamById(teamspostproceded[renderIndex].id_local);
         if (renderIndex >= 2) {
 
             teamspostproceded.sort((a, b) => b.current_score - a.current_score);
-            console.log(teamspostproceded)
+            console.log(teamspostproceded);
             renderTeamById(teamspostproceded[0].id_local);
             selecionDeEquipos = false;
             return;
@@ -131,9 +152,21 @@ function addStrikes() {
     }
 }
 
-function addScore(id) {
+function addScore(id, elementToRemove) {
     const ans = ronda.respuestas.find(t => t.id === Number(id));
     ronda.score += ans.score;
+
+    if (elementToRemove && elementToRemove.parentNode) {
+        elementToRemove.style.pointerEvents = 'none';
+        elementToRemove.style.color = "#ff0080"
+        elementToRemove.style.transition = 'opacity 1s ease-out';
+        elementToRemove.style.opacity = '0';
+
+        setTimeout(() => {
+            elementToRemove.remove();
+        }, 1000)
+    }
+
     if (selecionDeEquipos) {
 
         teamspostproceded[renderIndex].current_score += ans.score;
@@ -162,19 +195,47 @@ function addScore(id) {
 
 }
 
-function asignRondaScore() {
+function asignRondaScoreToFirst() {
+    console.log("entro a ronda score");
+    teamspostproceded[0].score += ronda.score;
     console.log(teamspostproceded);
-    currentTeam.score += ronda.score;
-    console.log(currentTeam.name);
-    console.log(currentTeam.score);
 
 }
 
+function automaticRondaTermination() {
+    console.log(teamspostproceded);
+    if (!selecionDeEquipos) {
+
+        const team1 = teamspostproceded[0];
+        const team2 = teamspostproceded[1];
+        const team3 = teamspostproceded[2];
+
+        if (team2.strikes >= 1 && team3.strikes < 1) {
+            console.log("Equipo ganador 3");
+            teamspostproceded[2].score += ronda.score;
+            console.log(teamspostproceded);
+        }
+
+        if (team1.strikes >= 3 && team2.strikes < 1) {
+            console.log("Equipo ganador 2");
+            teamspostproceded[1].score += ronda.score;
+            console.log(teamspostproceded);
+
+        }
+    }
+
+    if ((teamspostproceded[0].strikes < 3) && (contadorpreguntas >= 5) && (!selecionDeEquipos)) {
+        console.log("Equipo ganador");
+        teamspostproceded[0].score += ronda.score;
+        console.log(teamspostproceded);
+    }
+}
 
 
 let currentTeam = teamspostproceded.find((t) => t.id_local === 1);
 let selecionDeEquipos = true;
 let renderIndex = 0;
+let contadorpreguntas = 0;
 
 function initController() {
     const leftquestionBtn = document.getElementById("leftquestionBtn");
@@ -188,12 +249,17 @@ function initController() {
     wrongBtn.addEventListener("click", addStrikes);
     renderTeamById(currentTeam.id_local);
 
+
+
     ronda.respuestas.forEach((respuesta) => {
         const p = document.createElement("p");
         p.textContent = respuesta.texto;
 
-        p.addEventListener("click", () => {
-            addScore(respuesta.id);
+        p.addEventListener("click", (event) => {
+            addScore(respuesta.id, event.currentTarget);
+            contadorpreguntas++;
+            console.log(contadorpreguntas);
+            automaticRondaTermination();
         });
 
         contenedor.appendChild(p);
@@ -203,11 +269,10 @@ function initController() {
     leftquestionBtn.addEventListener("click", prevquestion);
     rightquestionshowBtn.addEventListener("click", nextquestion);
     showBtn.addEventListener("click", () => playsound("show"));
-    countdownBtn.addEventListener("click", () => playsound("countdown"));
+    countdownBtn.addEventListener("click", startCountdown);
     WinBtn.addEventListener("click", () => {
-        console.log(ans.score);
-        console.log(ronda.score);
-
+        console.log("Ronda score:", ronda.score);
+        console.log("Current team score:", currentTeam.score);
     });
     TutuownBtn.addEventListener("click", () => playsound("tutuown"));
 }

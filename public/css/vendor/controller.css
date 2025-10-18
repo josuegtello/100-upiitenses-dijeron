@@ -41,6 +41,7 @@
 
     transform: scale(1.2);
 }
+
 .contenedorpreguntas>p {
     display: flex;
     flex-direction: row;
@@ -93,9 +94,9 @@
     border: none;
     border-radius: 8px;
     font-size: 25px;
-    }
-    
-    .primary {
+}
+
+.primary {
     color: white;
     background-color: #ff0080;
 }
@@ -161,7 +162,7 @@
     box-shadow: 8px 8px 15px #2a223d99, -8px -8px 15px #4a3b6399;
     transition: all 0.2s ease;
     border-radius: 8px;
-
+    font-weight: 400;
     background-color: var(--darkcolor);
 }
 
