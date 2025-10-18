@@ -1,18 +1,25 @@
 
 import initController from "../controller.js"
-
+import {initPresentation} from "../presentation.js"
+import app from "../middlewares/app.js"
+import { connectWebSocket } from "./websocket.js"
 
 const controller = (redirect) => {
     const {href,route} = redirect
 
     if (href.includes("controller")){
         redirect.route="controller"
-        //TODO: Colocar los controladores
+        // Colocar los controladores
         initController();
+        app.rol="controller";
+        connectWebSocket();
     }
     else if (href.includes("presentation")){
         redirect.route="presentation"
-        // TODO: Colocar los controladores
+        // Colocar los controladores
+        initPresentation();
+        app.rol="presentation";
+        connectWebSocket();
 
     }
     else if (href.includes("menu")){

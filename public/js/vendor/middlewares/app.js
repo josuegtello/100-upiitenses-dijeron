@@ -7,8 +7,24 @@ const   d=document,
 
 class App {
     constructor(){
-        this.teams=[];
-        this._wsID=null;
+        this.teams=[
+            
+        ];
+        this.rounds=[
+            {
+                id:1,
+                question:"",
+                answers:[
+                    {
+                        id:1,
+                        score:90,
+                        answer:""
+                    }
+                ]
+            }
+        ]
+        this.ws_id=null;
+        this.rol=null;
     }
     //Metodo que obtendra todo el contenido necesario para la app
     async initContent(){
