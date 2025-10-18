@@ -1,5 +1,14 @@
 import app from "./middlewares/app.js";
 
+
+
+function sendWebSocketMessage(message) {
+    console.log("Sending WebSocket Message:", message.event);
+    console.log("Sending WebSocket Message:", message.body);
+}
+
+
+
 function playsound(sound) {
     console.log("sonido de" + sound);
 }
@@ -116,6 +125,11 @@ function addStrikes() {
 
         if (team1.strikes >= 3 && team2.strikes >= 1 && team3.strikes < 1) {
             team3.strikes++;
+            sendWebSocketMessage({
+                event: "STRIKE",
+                body: { strikes: team3.strikes }
+            });
+
         }
         if (team1.strikes >= 3 && team2.strikes >= 1 && team3.strikes >= 1) {
 
@@ -126,6 +140,10 @@ function addStrikes() {
         }
         if (team1.strikes >= 3 && team2.strikes < 1) {
             team2.strikes++;
+            sendWebSocketMessage({
+                event: "STRIKE",
+                body: { strikes: team2.strikes }
+            });
         }
         if (team2.strikes >= 1 && team3.strikes < 1) {
             renderTeamById(team3.id_local);
@@ -133,6 +151,10 @@ function addStrikes() {
 
         if (team1.strikes < 3) {
             team1.strikes++;
+            sendWebSocketMessage({
+                event: "STRIKE",
+                body: { strikes: team1.strikes }
+            });
         }
         if (team1.strikes >= 3 && team2.strikes < 1) {
             renderTeamById(team2.id_local);
@@ -141,6 +163,10 @@ function addStrikes() {
     } else {
         renderIndex++;
         renderTeamById(teamspostproceded[renderIndex].id_local);
+        sendWebSocketMessage({
+            event: "STRIKE",
+            body: { strikes: 1 }
+        });
         if (renderIndex >= 2) {
 
             teamspostproceded.sort((a, b) => b.current_score - a.current_score);
@@ -268,13 +294,29 @@ function initController() {
 
     leftquestionBtn.addEventListener("click", prevquestion);
     rightquestionshowBtn.addEventListener("click", nextquestion);
-    showBtn.addEventListener("click", () => playsound("show"));
+    showBtn.addEventListener("click", () => {
+        sendWebSocketMessage({
+            event: "SHOWROUND",
+            body: null
+        });
+    });
     countdownBtn.addEventListener("click", startCountdown);
     WinBtn.addEventListener("click", () => {
-        console.log("Ronda score:", ronda.score);
-        console.log("Current team score:", currentTeam.score);
+
+        sendWebSocketMessage({
+            event: "WINGAME ",
+            body: null
+        });
+
     });
-    TutuownBtn.addEventListener("click", () => playsound("tutuown"));
+    TutuownBtn.addEventListener("click", () => {
+
+        sendWebSocketMessage({
+            event: "TUTUsound",
+            body: null
+        });
+
+    });
 }
 
 export default initController;
