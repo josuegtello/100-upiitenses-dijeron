@@ -3,11 +3,18 @@ import {MENU} from "./constants.js"
 import router from "./router.js";
 const   d=document,
         w=window,
-        body=d.body;
+    body = d.body
 
 class App {
     constructor(){
-        this.teams=[];
+        this.teams = [
+            {
+                uuid4: "jkasvefiubyeifhnirtgijhtngvijh",
+                id: 1,
+                name: "ENANITOS VERDES",
+                score: 0
+            }
+        ];
         this._wsID=null;
     }
     //Metodo que obtendra todo el contenido necesario para la app

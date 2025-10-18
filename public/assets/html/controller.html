@@ -11,12 +11,7 @@
     href="https://fonts.googleapis.com/css2?family=Bitcount+Single+Ink:wght@100..900&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap"
     rel="stylesheet"
   />
-  <div class="contenedorequipo">
-    <p>Equipo</p>
-    <p>3</p>
-
-    <p>Nombre del equipo</p>
-  </div>
+  <div class="contenedorequipo"></div>
 
   <div class="contenedorpreguntas">
     <button id="leftquestionBtn" name="leftButton" class="primary">
@@ -30,7 +25,7 @@
         <path d="M640-80 240-480l400-400 71 71-329 329 329 329-71 71Z" />
       </svg>
     </button>
-    <p>3</p>
+    <p id="id_pregunta">3</p>
     <button id="rightquestionshowBtn" name="rightButton" class="primary">
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -46,19 +41,24 @@
   </div>
 
   <div class="contenedoreventos">
-    <div class="contendorespuestas">
-      <p>Respuesta 1</p>
-      <p>Respuesta 2</p>
-      <p>Respuesta 3</p>
-      <p>Respuesta 4</p>
-      <p>Respuesta 5</p>
-    </div>
+    <div class="contendorespuestas"></div>
 
     <div class="contenedoresbotones">
       <button id="showBtn" name="ShowButton" class="primary">Show</button>
       <button id="countdownBtn" name="CountdownButton" class="primary">
-        Start
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="40px"
+          viewBox="0 -960 960 960"
+          width="34px"
+          fill="#e3e3e3"
+        >
+          <path
+            d="M480-80q-75 0-140.5-28.5t-114-77q-48.5-48.5-77-114T120-440q0-75 28.5-140.5t77-114q48.5-48.5 114-77T480-800q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-440q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-80Zm0-360Zm112 168 56-56-128-128v-184h-80v216l152 152ZM224-866l56 56-170 170-56-56 170-170Zm512 0 170 170-56 56-170-170 56-56ZM480-160q117 0 198.5-81.5T760-440q0-117-81.5-198.5T480-720q-117 0-198.5 81.5T200-440q0 117 81.5 198.5T480-160Z"
+          />
+        </svg>
       </button>
+      <button id="wrongBtn" name="WrongButton" class="wrong">X</button>
       <button id="WinBtn" name="WinButton" class="primary">Win</button>
       <button id="TutuownBtn" name="TutuButton" class="primary">Tutu</button>
     </div>
