@@ -16,7 +16,9 @@
     align-items: center;
 }
 
-
+/*text1-text2-textn
+    contender-preguntas
+*/
 .contenedorpreguntas {
     padding: 10px;
     display: flex;

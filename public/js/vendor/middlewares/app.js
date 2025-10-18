@@ -7,15 +7,24 @@ const   d=document,
 
 class App {
     constructor(){
-        this.teams = [
-            {
-                uuid4: "jkasvefiubyeifhnirtgijhtngvijh",
-                id: 1,
-                name: "ENANITOS VERDES",
-                score: 0
-            }
+        this.teams=[
+            
         ];
-        this._wsID=null;
+        this.rounds=[
+            {
+                id:1,
+                question:"",
+                answers:[
+                    {
+                        id:1,
+                        score:90,
+                        answer:""
+                    }
+                ]
+            }
+        ]
+        this.ws_id=null;
+        this.rol=null;
     }
     //Metodo que obtendra todo el contenido necesario para la app
     async initContent(){

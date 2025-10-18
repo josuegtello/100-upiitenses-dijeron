@@ -20,7 +20,7 @@ const websocket = new WebSocketServer({ port: 8083 });
 
 websocket.on("connection", (ws, req) => {
     // Nuevo cliente WebSocket conectado
-    
+    console.log("Nuevo cliente WebSocket conectado")
     // Manejador para mensajes tipo "pong" (respuesta a un "ping" enviado por el servidor)
     ws.on("pong", () => {
         
@@ -39,6 +39,12 @@ websocket.on("connection", (ws, req) => {
     // Manejador para recibir mensajes enviados por el cliente
     ws.on("message", (msg) => {
         console.log("Mensaje recibido:", msg.toString());
+        try {
+            const data=JSON.parse(msg.toString());
+            
+        } catch (err) {
+            
+        }
     });
 });
 

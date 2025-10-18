@@ -1,12 +1,5 @@
 import app from "./middlewares/app.js";
-
-
-
-function sendWebSocketMessage(message) {
-    console.log("Sending WebSocket Message:", message.event);
-    console.log("Sending WebSocket Message:", message.body);
-}
-
+import { sendWebSocketMessage } from "./controllers/websocket.js";
 
 
 function playsound(sound) {
@@ -27,7 +20,7 @@ const preprocessTeams = (teams) => {
     }));
 };
 
-app.getTeams();
+//app.getTeams();
 
 const teamsprepocesed = [
     { id: 1, name: "Team Alpha", score: 0 },

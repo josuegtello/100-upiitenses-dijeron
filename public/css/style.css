@@ -1,3 +1,6 @@
+/*Importaciones*/
+@import url('https://fonts.cdnfonts.com/css/seven-segment');
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 /*despues de custom properties y reseteo empezar con la cabecera*/
 /*******Custom Properties*******/
 :root {
@@ -5,9 +8,9 @@
     --numeros:#fff8a9;
     --letras:#c5ef81;
     --tablero:#939588;
-    --bg-respuestas:#222514;
+    --bg-respuestas:#1a1d10;
     --decoracion:#fff6ff;
-    --bg:#88474b;
+    --bg:#882027;
     --bg-numeros:#040500;
 
     /*Definicion de tipografias*/
@@ -86,4 +89,37 @@ p { /*altura de la linea sea de 1.6,
     tiene que ver un poco con el tamaño de la letra, como un interlineado*/
     line-height: 1.1;
     margin: 0;
+}
+body{
+    background-color: var(--bg);
+}
+input:focus{
+    outline: none;
+    outline-style: none;
+}
+
+
+/*Estilos Generales*/
+.opacity-0{
+    opacity: 0;
+}
+.pointer-events-none{
+    pointer-events: none;
+}
+.display-none{
+    display: none;
+}
+/*SCROLL BAR*/
+/* 1. Fondo de la barra de desplazamiento (la pista) */
+::-webkit-scrollbar {
+    width: 15px; /* Ancho de la barra de desplazamiento vertical */
+    height: 15px; /* Alto de la barra de desplazamiento horizontal */
+    background-color: #222; /* Un fondo ligeramente más claro que el body para que se vea la pista */
+}
+
+/* 2. El "pulgar" o "thumb" (la parte que se mueve) */
+::-webkit-scrollbar-thumb {
+    background-color: #c5ef81; /* Color verde brillante del pulgar */
+    border-radius: 8px; /* Bordes redondeados para el pulgar */
+    border: 3px solid #222; /* Borde para que el pulgar no se pegue al borde de la pista */
 }
