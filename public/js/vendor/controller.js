@@ -10,14 +10,7 @@ function setQuestion(newId) {
     renderRespuestas();
 }
 
-const preprocessTeams = (teams) => {
-    return teams.map((team, index) => ({
-        ...team,
-        id_local: index + 1,
-        strikes: 0,
-        current_score: 0,
-    }));
-};
+
 
 function getPreguntaById(id) {
     const ronda = rounds.find(r => r.id === id);
@@ -28,13 +21,38 @@ function setRonda(id) {
     return rounds.find(r => r.id === id);
 }
 
-const teamsprepocesed = [
-    { id: 1, name: "Team Alpha", score: 0 },
-    { id: 6, name: "Team Yuigahama", score: 0 },
-    { id: 8, name: "Team Yukinon", score: 0 },
-];
 
-const teamspostproceded = preprocessTeams(teamsprepocesed);
+//app.getTeams();
+
+const teamsprepocesed = [];
+const teamspostproceded = [];
+
+const setRoundParticipants = function (participants) {
+    participants.forEach(participant => {
+        const teams = app.teams
+        teams.forEach(team => {
+            if (participant.uuidv4 === team.uuidv4) {
+                const { uuidv4, id, name } = team
+                teamsprepocesed.push({
+                    uuidv4,
+                    id,
+                    name
+                });
+            }
+        });
+    });
+    teamsprepocesed.forEach((team, index) => {
+        teamspostproceded.push({
+            ...team,
+            id_local: index + 1,
+            strikes: 0,
+            current_score: 0,
+        })
+    });
+    renderTeamById(currentTeam.id_local);
+}
+
+// console.log(teamspostproceded)
 
 function nextquestion() {
     if (currentQuestionIndex < rounds.length) {
@@ -101,6 +119,7 @@ function addStrikes() {
             renderTeamById(team1.id_local);
             asignRondaScoreToFirst();
             rondaTerminated = true;
+            resetRound();
             return;
         }
         if (team1.strikes >= 3 && team2.strikes < 1) {
@@ -179,10 +198,12 @@ function addScore(id, elementToRemove) {
 }
 
 function asignRondaScoreToFirst() {
-    console.log("entro a ronda score");
+
     teamspostproceded[0].score += (currentRonda.score || 0);
     console.log(teamspostproceded);
     rondaTerminated = true;
+    updateWinnerById(teamspostproceded[0]);
+    resetRound();
 }
 
 function automaticRondaTermination() {
@@ -197,6 +218,9 @@ function automaticRondaTermination() {
             teamspostproceded[2].score += (currentRonda.score || 0);
             console.log(teamspostproceded);
             rondaTerminated = true;
+
+            updateWinnerById(teamspostproceded[2]);
+            resetRound();
         }
 
         if (team1.strikes >= 3 && team2.strikes < 1) {
@@ -204,13 +228,18 @@ function automaticRondaTermination() {
             teamspostproceded[1].score += (currentRonda.score || 0);
             console.log(teamspostproceded);
             rondaTerminated = true;
+            updateWinnerById(teamspostproceded[1]);
+
+            resetRound();
         }
     }
 
     if ((teamspostproceded[0].strikes < 3) && (contadorpreguntas >= 5) && (!selecionDeEquipos)) {
         console.log("Equipo ganador");
-        teamspostproceded[0].score += currentRonda.score;
+        teamspostproceded[0].score += (currentRonda.score || 0);
         console.log(teamspostproceded);
+        rondaTerminated = true;
+        resetRound();
     }
 }
 
@@ -223,18 +252,40 @@ function terminateGame() {
     });
 }
 
+function resetRound() {
+    console.log("Resetting round...");
+
+    // Reset all team strikes
+    teamspostproceded.forEach(team => {
+        team.strikes = 0;
+        team.current_score = 0;
+    });
+
+    // Reset round state (but NOT contadorpreguntas - keep answered questions)
+    rondaTerminated = false;
+    if (currentRonda) {
+        currentRonda.score = 0;
+    }
+
+    // Reset team selection state
+    selecionDeEquipos = true;
+    renderIndex = 0;
+    currentTeam = teamspostproceded.find((t) => t.id_local === 1);
+
+    // Re-render current team
+    renderTeamById(currentTeam.id_local);
+
+    // Send win notification via WebSocket
+
+
+    console.log("Round reset complete", teamspostproceded);
+}
+
 function renderRespuestas() {
     const contenedor = document.querySelector(".contendorespuestas");
 
     // Clear existing answers efficiently
     contenedor.innerHTML = '';
-
-    // Reset round state
-    contadorpreguntas = 0;
-    rondaTerminated = false;
-    if (currentRonda) {
-        currentRonda.score = 0;
-    }
 
     // Create answer elements using DocumentFragment for better performance
     const fragment = document.createDocumentFragment();
@@ -254,7 +305,7 @@ function renderRespuestas() {
                 automaticRondaTermination();
 
                 sendWebSocketMessage({
-                    event: "RESPUESTA",
+                    event: "Respuesta",
                     body: { id: respuesta.id }
                 });
             });
@@ -284,6 +335,7 @@ function initController() {
     const countdownBtn = document.getElementById("countdownBtn");
     const WinBtn = document.getElementById("WinBtn");
     const TutuownBtn = document.getElementById("TutuownBtn");
+    const resetBtn = document.getElementById("resetBtn");
     wrongBtn = document.getElementById("wrongBtn");
 
     // Event listeners for controls
@@ -308,9 +360,13 @@ function initController() {
         });
     });
 
+    if (resetBtn) {
+        resetBtn.addEventListener("click", resetRound);
+    }
+
     // Initial render
-    renderTeamById(currentTeam.id_local);
+
     setQuestion(currentQuestionIndex);
 }
 
-export default initController;
+export { initController, setRoundParticipants };

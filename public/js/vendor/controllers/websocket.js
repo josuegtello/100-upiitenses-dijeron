@@ -7,25 +7,36 @@ let connection={
 }
 
 //Evento de mensaje
-const handleOnMessage=function(e){
-    const data=JSON.parse(e.data);
-    console.log("Mensaje WebSokcet recibido:",data);
-    const {event}=data;
-    //Mensaje de conexion webSocket exitoso
-    if(event === "websocket-connected"){
-        console.log("Configuramos el puerto WebSocket");
-        const {ws_id}=data;
-        app.ws_id=ws_id;
-    }
-    // EVENTOS DEL CONTROLADOR
+// Evento de mensaje
+const handleOnMessage = function (e) {
+    const data = JSON.parse(e.data);
+    console.log("Mensaje WebSocket recibido:", data);
+    const { event, body } = data;
 
+    // Mensaje de conexion WebSocket exitoso
+    if (event === "websocket-connected") {
+        console.log("Configuramos el puerto WebSocket");
+        const { ws_id } = body;
+        app.ws_id = ws_id;
+    }
+
+    else if (event === "got-teams") {
+        const { teams } = body;
+        app.teams = teams;
+    }
+
+    // EVENTOS DEL CONTROLADOR
+    // Evento que contiene los primeros 3 participantes
+    else if (event === "round-participants") {
+        const { participants } = body;
+        setRoundParticipants(participants);
+    }
 
     // EVENTOS DE LA PRESENTACION
 
 
+};
 
-
-}
 
 // Evento de conexion
 const handleOnOpen=function(event) {
