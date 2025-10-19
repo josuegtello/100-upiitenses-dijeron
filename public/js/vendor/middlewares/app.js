@@ -1,6 +1,7 @@
 import fetchRequest from "./fetch_request.js"
 import {MENU} from "./constants.js"
 import router from "./router.js";
+import { sendWebSocketMessage } from "../controllers/websocket.js";
 const   d=document,
         w=window,
     body = d.body
@@ -48,7 +49,17 @@ class App {
     }
     //Metodo que obtendra la informacion actualizada de los clientes asi como el WebSocket ID de nuestros botones
     async getTeams(){
-
+        sendWebSocketMessage({
+            event:"get-teams",
+            body:null
+        })
+    }
+    //Metodo para obtener las rondas
+    async getRounds(){
+        sendWebSocketMessage({
+            event:"get-rounds",
+            body:null
+        })
     }
 }
 const app= new App();

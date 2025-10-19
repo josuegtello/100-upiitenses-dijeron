@@ -1,6 +1,12 @@
 import app from "./middlewares/app.js";
 import { sendWebSocketMessage } from "./controllers/websocket.js";
 
+const teamsprepocesed = [];
+const teamspostproceded = [];
+let currentTeam = teamspostproceded.find((t) => t.id_local === 1);
+let selecionDeEquipos = true;
+let renderIndex = 0;
+let contadorpreguntas = 0;
 
 function playsound(sound) {
     console.log("sonido de" + sound);
@@ -22,14 +28,36 @@ const preprocessTeams = (teams) => {
 
 //app.getTeams();
 
-const teamsprepocesed = [
-    { id: 1, name: "Team Alpha", score: 0 },
-    { id: 6, name: "Team Yuigahama", score: 0 },
-    { id: 8, name: "Team Yukinon", score: 0 },
-];
 
 
-const teamspostproceded = preprocessTeams(teamsprepocesed);
+const setRoundParticipants=function(participants){
+    participants.forEach(participant => {
+        const teams=app.teams
+        teams.forEach(team => {
+            if(participant.uuidv4=== team.uuidv4){
+                const {uuidv4,id,name}=team
+                teamsprepocesed.push({
+                    uuidv4,
+                    id,
+                    name
+                });
+            }
+        });
+    });
+    teamsprepocesed.forEach((team,index) => {
+        teamspostproceded.push({
+            ...team,
+            id_local: index + 1,
+            strikes: 0,
+            current_score: 0,
+        })
+    });
+    console.log(teamsprepocesed,teamspostproceded)
+    currentTeam = teamspostproceded.find((t) => t.id_local === 1);
+    renderTeamById(currentTeam.id_local);
+}
+
+
 
 const ronda = {
     id: 1,
@@ -252,12 +280,6 @@ function automaticRondaTermination() {
     }
 }
 
-
-let currentTeam = teamspostproceded.find((t) => t.id_local === 1);
-let selecionDeEquipos = true;
-let renderIndex = 0;
-let contadorpreguntas = 0;
-
 function initController() {
     const leftquestionBtn = document.getElementById("leftquestionBtn");
     const rightquestionshowBtn = document.getElementById("rightquestionshowBtn");
@@ -268,7 +290,7 @@ function initController() {
     const contenedor = document.querySelector(".contendorespuestas");
     const wrongBtn = document.getElementById("wrongBtn");
     wrongBtn.addEventListener("click", addStrikes);
-    renderTeamById(currentTeam.id_local);
+    
 
 
 
@@ -314,4 +336,7 @@ function initController() {
     });
 }
 
-export default initController;
+export  {
+    initController,
+    setRoundParticipants
+};
