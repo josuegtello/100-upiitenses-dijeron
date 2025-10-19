@@ -2,13 +2,12 @@ import app from "./middlewares/app.js";
 import { sendWebSocketMessage } from "./controllers/websocket.js";
 
 
-function playsound(sound) {
-    console.log("sonido de" + sound);
-}
 
-function changePregunta(newId) {
-    const elemento = document.getElementById("id_pregunta");
-    elemento.textContent = newId;
+
+function setQuestion(newId) {
+    document.getElementById("id_pregunta").textContent = newId;
+    document.getElementById("pregunta").textContent = getPreguntaById(newId);
+
 }
 
 const preprocessTeams = (teams) => {
@@ -20,7 +19,12 @@ const preprocessTeams = (teams) => {
     }));
 };
 
-//app.getTeams();
+
+
+function getPreguntaById(id) {
+    const ronda = rounds.find(r => r.id === id);
+    return ronda ? ronda.pregunta : null;
+}
 
 const teamsprepocesed = [
     { id: 1, name: "Team Alpha", score: 0 },
@@ -30,6 +34,9 @@ const teamsprepocesed = [
 
 
 const teamspostproceded = preprocessTeams(teamsprepocesed);
+
+
+
 
 const ronda = {
     id: 1,
@@ -44,32 +51,21 @@ const ronda = {
     ],
 };
 
-const ronda2 = {
-    id: 1,
-    pregunta: "pregunta2",
-    score: 0,
-    respuestas: [
-        { id: 1, texto: "Respuesta 21" },
-        { id: 2, texto: "Respuesta 22" },
-        { id: 3, texto: "Respuesta 23" },
-        { id: 4, texto: "Respuesta 24" },
-        { id: 5, texto: "Respuesta 25" },
-    ],
-};
-let currentQuestionIndex = 0;
+
+
 
 function nextquestion() {
-    if (currentQuestionIndex < 20) {
+    if (currentQuestionIndex < rounds.length) {
         currentQuestionIndex++;
-        changePregunta(currentQuestionIndex);
+        setQuestion(currentQuestionIndex);
         console.log({ currentQuestionIndex });
     }
 }
 
 function prevquestion() {
-    if (currentQuestionIndex > 0) {
+    if (currentQuestionIndex > 1) {
         currentQuestionIndex--;
-        changePregunta(currentQuestionIndex);
+        setQuestion(currentQuestionIndex);
         console.log({ currentQuestionIndex });
     }
 }
@@ -80,10 +76,10 @@ function renderTeamById(_id_local) {
 
     const contenedorEquipo = document.querySelector(".contenedorequipo");
     contenedorEquipo.innerHTML = `
-        <p>Equipo</p>
-        <p>${team.id}</p>
-        <p>: ${team.name}</p>
-   
+    <p>Equipo</p>
+    <p>${team.id}</p>
+    <p>: ${team.name}</p>
+    
     `;
 }
 function startCountdown() {
@@ -130,7 +126,7 @@ function addStrikes() {
 
             renderTeamById(team1.id_local);
             asignRondaScoreToFirst();
-
+            rondaTerminated = true;
             return;
         }
         if (team1.strikes >= 3 && team2.strikes < 1) {
@@ -220,6 +216,7 @@ function asignRondaScoreToFirst() {
     console.log("entro a ronda score");
     teamspostproceded[0].score += ronda.score;
     console.log(teamspostproceded);
+    rondaTerminated = true;
 
 }
 
@@ -235,12 +232,14 @@ function automaticRondaTermination() {
             console.log("Equipo ganador 3");
             teamspostproceded[2].score += ronda.score;
             console.log(teamspostproceded);
+            rondaTerminated = true;
         }
 
         if (team1.strikes >= 3 && team2.strikes < 1) {
             console.log("Equipo ganador 2");
             teamspostproceded[1].score += ronda.score;
             console.log(teamspostproceded);
+            rondaTerminated = true;
 
         }
     }
@@ -252,13 +251,29 @@ function automaticRondaTermination() {
     }
 }
 
+function terminateGame() {
+
+    teams = app.getTeams();
+    const sorted = [...teams].sort((a, b) => a.score - b.score);
+    sendWebSocketMessage({
+        event: "WINGAME ",
+        body: sorted[0]
+    });
+
+}
+
 
 let currentTeam = teamspostproceded.find((t) => t.id_local === 1);
 let selecionDeEquipos = true;
 let renderIndex = 0;
 let contadorpreguntas = 0;
+let rondaTerminated = false;
+let currentQuestionIndex = 1;
+let rounds = [];
+let currentRonda;
 
 function initController() {
+    rounds = app.getRounds();
     const leftquestionBtn = document.getElementById("leftquestionBtn");
     const rightquestionshowBtn = document.getElementById("rightquestionshowBtn");
     const showBtn = document.getElementById("showBtn");
@@ -269,18 +284,27 @@ function initController() {
     const wrongBtn = document.getElementById("wrongBtn");
     wrongBtn.addEventListener("click", addStrikes);
     renderTeamById(currentTeam.id_local);
+    setQuestion(currentQuestionIndex);
+    currentRonda = setRonda(currentQuestionIndex);
 
-
-
-    ronda.respuestas.forEach((respuesta) => {
+    currentRonda.respuestas.forEach((respuesta) => {
         const p = document.createElement("p");
         p.textContent = respuesta.texto;
 
         p.addEventListener("click", (event) => {
-            addScore(respuesta.id, event.currentTarget);
-            contadorpreguntas++;
-            console.log(contadorpreguntas);
+            if (!rondaTerminated) {
+
+                addScore(respuesta.id, event.currentTarget);
+                contadorpreguntas++;
+                console.log(contadorpreguntas);
+            }
             automaticRondaTermination();
+
+            sendWebSocketMessage({
+                event: "TUTUsound",
+                body: { id: respuesta.id }
+            });
+
         });
 
         contenedor.appendChild(p);
@@ -292,18 +316,11 @@ function initController() {
     showBtn.addEventListener("click", () => {
         sendWebSocketMessage({
             event: "SHOWROUND",
-            body: null
+            body: { id: ronda.id }
         });
     });
     countdownBtn.addEventListener("click", startCountdown);
-    WinBtn.addEventListener("click", () => {
-
-        sendWebSocketMessage({
-            event: "WINGAME ",
-            body: null
-        });
-
-    });
+    WinBtn.addEventListener("click", terminateGame);
     TutuownBtn.addEventListener("click", () => {
 
         sendWebSocketMessage({
