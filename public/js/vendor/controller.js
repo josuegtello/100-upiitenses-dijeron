@@ -12,15 +12,13 @@ let currentQuestionIndex = 1;
 
 
 
-function changePregunta(newId) {
-    const elemento = document.getElementById("id_pregunta");
-    elemento.textContent = newId;
-}
+
 async function setQuestion(newId) {
     document.getElementById("id_pregunta").textContent = newId;
     document.getElementById("pregunta").textContent = getPreguntaById(newId);
-    // Update current round and render new answers
+
     currentRonda = setRonda(newId);
+
     renderRespuestas();
 }
 
@@ -28,23 +26,14 @@ async function setQuestion(newId) {
 
 function getPreguntaById(id) {
     const ronda = rounds.find(r => r.id === id);
-    return ronda ? ronda.pregunta : null;
+    return ronda ? ronda.question : null;
 }
 
 function setRonda(id) {
     return rounds.find(r => r.id === id);
 }
 
-const preprocessTeams = (teams) => {
-    return teams.map((team, index) => ({
-        ...team,
-        id_local: index + 1,
-        strikes: 0,
-        current_score: 0,
-    }));
-};
 
-//app.getTeams();
 
 
 
@@ -73,38 +62,14 @@ const setRoundParticipants = function (participants) {
             current_score: 0,
         })
     });
-    console.log(teamsprepocesed, teamspostproceded)
+    console.log(`pre ${JSON.stringify(teamsprepocesed[0])} `);
+    console.log(`post ${JSON.stringify(teamspostproceded[0])}`);
     currentTeam = teamspostproceded.find((t) => t.id_local === 1);
     renderTeamById(currentTeam.id_local);
 }
 
 
 
-const ronda = {
-    id: 1,
-    pregunta: "pregunta",
-    score: 0,
-    respuestas: [
-        { id: 1, texto: "Respuesta 1", score: 65 },
-        { id: 2, texto: "Respuesta 2", score: 60 },
-        { id: 3, texto: "Respuesta 3", score: 58 },
-        { id: 4, texto: "Respuesta 4", score: 44 },
-        { id: 5, texto: "Respuesta 5", score: 32 },
-    ],
-};
-
-const ronda2 = {
-    id: 1,
-    pregunta: "pregunta2",
-    score: 0,
-    respuestas: [
-        { id: 1, texto: "Respuesta 21" },
-        { id: 2, texto: "Respuesta 22" },
-        { id: 3, texto: "Respuesta 23" },
-        { id: 4, texto: "Respuesta 24" },
-        { id: 5, texto: "Respuesta 25" },
-    ],
-};
 
 
 function nextquestion() {
@@ -214,7 +179,7 @@ function addStrikes() {
 }
 
 function addScore(id, elementToRemove) {
-    const ans = currentRonda.respuestas.find(t => t.id === Number(id));
+    const ans = currentRonda.answers.find(t => t.id === Number(id));
     currentRonda.score = (currentRonda.score || 0) + ans.score;
 
     if (elementToRemove && elementToRemove.parentNode) {
@@ -343,15 +308,15 @@ function renderRespuestas() {
     // Create answer elements using DocumentFragment for better performance
     const fragment = document.createDocumentFragment();
 
-    if (currentRonda && currentRonda.respuestas) {
-        currentRonda.respuestas.forEach((respuesta) => {
+    if (currentRonda && currentRonda.answers) {
+        currentRonda.answers.forEach((answer) => {
             const p = document.createElement("p");
-            p.textContent = respuesta.texto;
-            p.dataset.answerId = respuesta.id;
+            p.textContent = answer.text;
+            p.dataset.answerId = answer.id;
 
             p.addEventListener("click", (event) => {
                 if (!rondaTerminated) {
-                    addScore(respuesta.id, event.currentTarget);
+                    addScore(answer.id, event.currentTarget);
                     contadorpreguntas++;
                     console.log(contadorpreguntas);
                 }
@@ -390,24 +355,7 @@ async function initController() {
 
     // Event listeners for controls
     wrongBtn.addEventListener("click", addStrikes);
-
-
-
-
-    ronda.respuestas.forEach((respuesta) => {
-        const contenedor = document.querySelector(".contendorespuestas");
-        const p = document.createElement("p");
-        p.textContent = respuesta.texto;
-
-        p.addEventListener("click", (event) => {
-            addScore(respuesta.id, event.currentTarget);
-            contadorpreguntas++;
-            console.log(contadorpreguntas);
-            automaticRondaTermination();
-        });
-
-        contenedor.appendChild(p);
-    });
+    setQuestion(currentQuestionIndex);
 
 
     leftquestionBtn.addEventListener("click", prevquestion);
@@ -434,9 +382,8 @@ async function initController() {
         resetBtn.addEventListener("click", resetRound);
     }
 
-    // Initial render
 
-    setQuestion(currentQuestionIndex);
+
 }
 
 export {
