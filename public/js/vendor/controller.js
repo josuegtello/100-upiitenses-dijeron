@@ -1,10 +1,26 @@
 import app from "./middlewares/app.js";
-import { sendWebSocketMessage } from "./controllers/websocket.js";
+import { sendWebSocketMessage,getReadyState } from "./controllers/websocket.js";
+import sleep from "./middlewares/sleep.js";
 
-function setQuestion(newId) {
+const teamsprepocesed = [];
+const teamspostproceded = [];
+let currentTeam = teamspostproceded.find((t) => t.id_local === 1);
+let selecionDeEquipos = true;
+let renderIndex = 0;
+let contadorpreguntas = 0;
+let currentQuestionIndex = 1;
+
+function playsound(sound) {
+    console.log("sonido de" + sound);
+}
+
+function changePregunta(newId) {
+    const elemento = document.getElementById("id_pregunta");
+    elemento.textContent = newId;
+}
+async function setQuestion(newId) {
     document.getElementById("id_pregunta").textContent = newId;
     document.getElementById("pregunta").textContent = getPreguntaById(newId);
-
     // Update current round and render new answers
     currentRonda = setRonda(newId);
     renderRespuestas();
@@ -21,18 +37,25 @@ function setRonda(id) {
     return rounds.find(r => r.id === id);
 }
 
+const preprocessTeams = (teams) => {
+    return teams.map((team, index) => ({
+        ...team,
+        id_local: index + 1,
+        strikes: 0,
+        current_score: 0,
+    }));
+};
 
 //app.getTeams();
 
-const teamsprepocesed = [];
-const teamspostproceded = [];
 
-const setRoundParticipants = function (participants) {
+
+const setRoundParticipants=function(participants){
     participants.forEach(participant => {
-        const teams = app.teams
+        const teams=app.teams
         teams.forEach(team => {
-            if (participant.uuidv4 === team.uuidv4) {
-                const { uuidv4, id, name } = team
+            if(participant.uuidv4=== team.uuidv4){
+                const {uuidv4,id,name}=team
                 teamsprepocesed.push({
                     uuidv4,
                     id,
@@ -41,7 +64,7 @@ const setRoundParticipants = function (participants) {
             }
         });
     });
-    teamsprepocesed.forEach((team, index) => {
+    teamsprepocesed.forEach((team,index) => {
         teamspostproceded.push({
             ...team,
             id_local: index + 1,
@@ -49,10 +72,39 @@ const setRoundParticipants = function (participants) {
             current_score: 0,
         })
     });
+    console.log(teamsprepocesed,teamspostproceded)
+    currentTeam = teamspostproceded.find((t) => t.id_local === 1);
     renderTeamById(currentTeam.id_local);
 }
 
-// console.log(teamspostproceded)
+
+
+const ronda = {
+    id: 1,
+    pregunta: "pregunta",
+    score: 0,
+    respuestas: [
+        { id: 1, texto: "Respuesta 1", score: 65 },
+        { id: 2, texto: "Respuesta 2", score: 60 },
+        { id: 3, texto: "Respuesta 3", score: 58 },
+        { id: 4, texto: "Respuesta 4", score: 44 },
+        { id: 5, texto: "Respuesta 5", score: 32 },
+    ],
+};
+
+const ronda2 = {
+    id: 1,
+    pregunta: "pregunta2",
+    score: 0,
+    respuestas: [
+        { id: 1, texto: "Respuesta 21" },
+        { id: 2, texto: "Respuesta 22" },
+        { id: 3, texto: "Respuesta 23" },
+        { id: 4, texto: "Respuesta 24" },
+        { id: 5, texto: "Respuesta 25" },
+    ],
+};
+
 
 function nextquestion() {
     if (currentQuestionIndex < rounds.length) {
@@ -317,18 +369,15 @@ function renderRespuestas() {
     contenedor.appendChild(fragment);
 }
 
-let currentTeam = teamspostproceded.find((t) => t.id_local === 1);
-let selecionDeEquipos = true;
-let renderIndex = 0;
-let contadorpreguntas = 0;
 let rondaTerminated = false;
-let currentQuestionIndex = 1;
 let rounds = [];
 let currentRonda;
 let wrongBtn;
 
-function initController() {
-    rounds = app.getRounds();
+async function initController() {
+    while (app.rounds.length === 0) await sleep(400);
+    rounds=app.rounds
+    //rounds = app.getRounds();
     const leftquestionBtn = document.getElementById("leftquestionBtn");
     const rightquestionshowBtn = document.getElementById("rightquestionshowBtn");
     const showBtn = document.getElementById("showBtn");
@@ -340,6 +389,26 @@ function initController() {
 
     // Event listeners for controls
     wrongBtn.addEventListener("click", addStrikes);
+    
+
+
+
+    ronda.respuestas.forEach((respuesta) => {
+        const contenedor = document.querySelector(".contendorespuestas");
+        const p = document.createElement("p");
+        p.textContent = respuesta.texto;
+
+        p.addEventListener("click", (event) => {
+            addScore(respuesta.id, event.currentTarget);
+            contadorpreguntas++;
+            console.log(contadorpreguntas);
+            automaticRondaTermination();
+        });
+
+        contenedor.appendChild(p);
+    });
+
+
     leftquestionBtn.addEventListener("click", prevquestion);
     rightquestionshowBtn.addEventListener("click", nextquestion);
 
@@ -369,4 +438,7 @@ function initController() {
     setQuestion(currentQuestionIndex);
 }
 
-export { initController, setRoundParticipants };
+export  {
+    initController,
+    setRoundParticipants
+}

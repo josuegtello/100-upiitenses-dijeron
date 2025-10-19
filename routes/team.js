@@ -1,1 +1,2 @@
-import db from "../models/team.js"
+import {model as db} from "../models/team.js"
+

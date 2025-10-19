@@ -6,7 +6,12 @@ import { WebSocketServer } from 'ws';
 import path from "path";
 import morgan from "morgan";
 import getLocalIpAddress from "./middlewares/ip.js";
+import socket from "./controller/websocket.js";
+import uuidv4 from "./middlewares/uuidv4.js"
+import connectDB from "./config/db.js";
 
+//Nos conectamos a la Base de datos
+connectDB();
 
 // Definicion de __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -21,6 +26,11 @@ const websocket = new WebSocketServer({ port: 8083 });
 websocket.on("connection", (ws, req) => {
     // Nuevo cliente WebSocket conectado
     console.log("Nuevo cliente WebSocket conectado")
+    const ws_id=uuidv4(),
+          color=Math.floor(Math.random() * 360),
+          metadata={ws_id,color}
+    socket.addClient(ws,metadata);// Agregamos cliente WebSocket
+
     // Manejador para mensajes tipo "pong" (respuesta a un "ping" enviado por el servidor)
     ws.on("pong", () => {
         
@@ -29,11 +39,13 @@ websocket.on("connection", (ws, req) => {
     // Manejador de errores en la conexión WebSocket del cliente
     ws.on("error", (err) => {
         console.error("WebSocket Client Error:", err);
+        socket.removeClient(ws);
     });
 
     // Manejador cuando el cliente se desconecta
     ws.on("close", () => {
         console.log("WebSocket Client Disconnected");
+        socket.removeClient(ws);
     });
 
     // Manejador para recibir mensajes enviados por el cliente
@@ -41,9 +53,9 @@ websocket.on("connection", (ws, req) => {
         console.log("Mensaje recibido:", msg.toString());
         try {
             const data=JSON.parse(msg.toString());
-            
+            socket.onMessage(ws,data);
         } catch (err) {
-            
+            console.log("Error en el formato del mensaje", err)
         }
     });
 });
@@ -89,8 +101,6 @@ app.use((req, res) => {
     // TODO: Devolver una respuesta en formato JSON en lugar de texto plano
     res.send("Resource Not Found");
 });
-
-
 
 httpServer.listen(port, () => {
     console.log(`Aplicación funcionando en http://${IP_ADRESS}:${port}/home`);

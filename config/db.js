@@ -1,12 +1,15 @@
-import mysql from 'mysql2/promise';
+import mongoose from "mongoose";
 
-export const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'eder',
-    password: 'dacgaf-8vuqse-Japjip',
-    database: '100upittenses_dijeron',
-    waitForConnections: true,
-    connectionLimit: 5
-});
 
-export default pool;
+const connectDB= async()=>{
+    try {
+        await mongoose.connect("mongodb://127.0.0.1:27017/upiitenses-dijeron");
+        console.log("Conexion exitosa a MongoDB");
+    } catch (err) {
+        console.error("Error de conexion a MongoDB", err);
+        process.exit(1);//cerramos la aplicacion de node
+    }
+}
+
+export default connectDB;
+

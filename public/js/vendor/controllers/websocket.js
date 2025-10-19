@@ -1,5 +1,6 @@
 import sleep from "../middlewares/sleep.js";
 import app from "../middlewares/app.js";
+import { setRoundParticipants } from "../controller.js";
 const d=document;
 
 let connection={
@@ -7,28 +8,29 @@ let connection={
 }
 
 //Evento de mensaje
-// Evento de mensaje
-const handleOnMessage = function (e) {
-    const data = JSON.parse(e.data);
-    console.log("Mensaje WebSocket recibido:", data);
-    const { event, body } = data;
-
-    // Mensaje de conexion WebSocket exitoso
-    if (event === "websocket-connected") {
+const handleOnMessage=function(e){
+    const data=JSON.parse(e.data);
+    console.log("Mensaje WebSokcet recibido:",data);
+    const {event,body}=data;
+    //Mensaje de conexion webSocket exitoso
+    if(event === "websocket-connected"){
         console.log("Configuramos el puerto WebSocket");
-        const { ws_id } = body;
-        app.ws_id = ws_id;
+        const {ws_id}=body;
+        app.ws_id=ws_id;
     }
-
-    else if (event === "got-teams") {
-        const { teams } = body;
-        app.teams = teams;
+    else if(event === "teams-obtained"){
+        const {teams}=body;
+        app.teams=teams;
     }
-
+    else if(event === "rounds-obtained"){
+        const {rounds}=body;
+        app.rounds=rounds;
+        console.log(app);
+    }
     // EVENTOS DEL CONTROLADOR
-    // Evento que contiene los primeros 3 participantes
-    else if (event === "round-participants") {
-        const { participants } = body;
+    // Evento que contiene los primeros 3 participantes 
+    else if(event === "round-participants"){
+        const {participants}=body;
         setRoundParticipants(participants);
     }
 
@@ -39,14 +41,27 @@ const handleOnMessage = function (e) {
 
 
 // Evento de conexion
-const handleOnOpen=function(event) {
+const handleOnOpen=async function(event) {
     console.log("WebSocket conectado");
+    await sleep(500);//Espero 1 segundo para solicitar mi ws_id
     sendWebSocketMessage({
         event:'set-rol',
         body:{
             rol:app.rol
         }
     });
+    await sleep(200);
+    app.getTeams();
+    await sleep(200);
+    app.getRounds();
+    await sleep(200);
+    // CASO PARTICULAR - CONTROLADOR
+    if(app.rol==="controller"){
+        sendWebSocketMessage({
+            event:"test-participants",
+            body:null
+        })
+    }
 }
 
 // Evento en cierre de conexion
@@ -89,8 +104,11 @@ const sendWebSocketMessage=function(data){
         console.log("WebSocket desconectado, no se puede enviar mensaje");
     }
 }
-
+const getReadyState=function(){
+    return connection.readyState
+}
 export {
+    getReadyState,
     connectWebSocket,
     sendWebSocketMessage
 }

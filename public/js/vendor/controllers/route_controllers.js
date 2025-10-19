@@ -1,5 +1,5 @@
 
-import { initController } from "../controller.js"
+import {initController} from "../controller.js"
 import {initPresentation} from "../presentation.js"
 import app from "../middlewares/app.js"
 import { connectWebSocket } from "./websocket.js"

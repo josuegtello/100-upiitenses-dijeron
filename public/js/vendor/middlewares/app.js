@@ -1,6 +1,7 @@
 import fetchRequest from "./fetch_request.js"
 import {MENU} from "./constants.js"
 import router from "./router.js";
+import { sendWebSocketMessage } from "../controllers/websocket.js";
 const   d=document,
         w=window,
     body = d.body
@@ -8,7 +9,7 @@ const   d=document,
 class App {
     constructor(){
         this.teams = [];
-        this.rounds = [
+        this.rounds = [/*
             {
                 id: 1,
                 pregunta: "pregunta 1",
@@ -128,7 +129,7 @@ class App {
                     { id: 4, texto: "Respuesta 410", score: 66 },
                     { id: 5, texto: "Respuesta 510", score: 55 },
                 ],
-            },
+            },*/
         ];
 
 
@@ -159,7 +160,18 @@ class App {
     }
     //Metodo que obtendra la informacion actualizada de los clientes asi como el WebSocket ID de nuestros botones
     async getTeams(){
-
+        sendWebSocketMessage({
+            event:"get-teams",
+            body:null
+        })
+    }
+    //Metodo para obtener las rondas
+    async getRounds(){
+        console.log("Obteniendo rondas");
+        sendWebSocketMessage({
+            event:"get-rounds",
+            body:null
+        })
     }
 
 
@@ -167,12 +179,6 @@ class App {
 
 
     }
-
-
-    getRounds() {
-        return this.rounds;
-    }
-
 }
 const app= new App();
 export default app;
