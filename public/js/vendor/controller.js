@@ -1,5 +1,5 @@
 import app from "./middlewares/app.js";
-import { sendWebSocketMessage,getReadyState } from "./controllers/websocket.js";
+import { sendWebSocketMessage, getReadyState } from "./controllers/websocket.js";
 import sleep from "./middlewares/sleep.js";
 
 const teamsprepocesed = [];
@@ -10,9 +10,7 @@ let renderIndex = 0;
 let contadorpreguntas = 0;
 let currentQuestionIndex = 1;
 
-function playsound(sound) {
-    console.log("sonido de" + sound);
-}
+
 
 function changePregunta(newId) {
     const elemento = document.getElementById("id_pregunta");
@@ -50,12 +48,15 @@ const preprocessTeams = (teams) => {
 
 
 
-const setRoundParticipants=function(participants){
+const setRoundParticipants = function (participants) {
+
     participants.forEach(participant => {
-        const teams=app.teams
+        const teams = app.teams;
         teams.forEach(team => {
-            if(participant.uuidv4=== team.uuidv4){
-                const {uuidv4,id,name}=team
+
+            if (participant.uuidv4 === team.uuidv4) {
+                console.log(`participante encontrado ${team.name}`)
+                const { uuidv4, id, name } = team
                 teamsprepocesed.push({
                     uuidv4,
                     id,
@@ -64,7 +65,7 @@ const setRoundParticipants=function(participants){
             }
         });
     });
-    teamsprepocesed.forEach((team,index) => {
+    teamsprepocesed.forEach((team, index) => {
         teamspostproceded.push({
             ...team,
             id_local: index + 1,
@@ -72,7 +73,7 @@ const setRoundParticipants=function(participants){
             current_score: 0,
         })
     });
-    console.log(teamsprepocesed,teamspostproceded)
+    console.log(teamsprepocesed, teamspostproceded)
     currentTeam = teamspostproceded.find((t) => t.id_local === 1);
     renderTeamById(currentTeam.id_local);
 }
@@ -376,7 +377,7 @@ let wrongBtn;
 
 async function initController() {
     while (app.rounds.length === 0) await sleep(400);
-    rounds=app.rounds
+    rounds = app.rounds
     //rounds = app.getRounds();
     const leftquestionBtn = document.getElementById("leftquestionBtn");
     const rightquestionshowBtn = document.getElementById("rightquestionshowBtn");
@@ -389,7 +390,7 @@ async function initController() {
 
     // Event listeners for controls
     wrongBtn.addEventListener("click", addStrikes);
-    
+
 
 
 
@@ -438,7 +439,7 @@ async function initController() {
     setQuestion(currentQuestionIndex);
 }
 
-export  {
+export {
     initController,
     setRoundParticipants
 }
