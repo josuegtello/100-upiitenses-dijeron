@@ -70,7 +70,23 @@ const setRoundParticipants = function (participants) {
 
 
 
+function updateWinner(team, score) {
+    console.log(`Updating winner: ${team.name}`);
+    console.log(`Updating winner: ${team.id}`);
+    console.log(`uuidv4 : ${team.uuidv4}`);
 
+    // Send WebSocket message with the postprocessed team data
+    sendWebSocketMessage({
+        event: "winner-round",
+        body: {
+            team: {
+
+                id: team.uuidv4,
+                score: score
+            }
+        }
+    });
+}
 
 function nextquestion() {
     if (currentQuestionIndex < rounds.length) {
@@ -99,6 +115,15 @@ function renderTeamById(_id_local) {
     <p>: ${team.name}</p>
     
     `;
+
+    sendWebSocketMessage({
+        event: "show-team",
+        body: {
+            team: {
+                uuidv4: team.uuidv4
+            }
+        }
+    });
 }
 
 function startCountdown() {
@@ -129,7 +154,7 @@ function addStrikes() {
         if (team1.strikes >= 3 && team2.strikes >= 1 && team3.strikes < 1) {
             team3.strikes++;
             sendWebSocketMessage({
-                event: "STRIKE",
+                event: "strike",
                 body: { strikes: team3.strikes }
             });
         }
@@ -143,7 +168,7 @@ function addStrikes() {
         if (team1.strikes >= 3 && team2.strikes < 1) {
             team2.strikes++;
             sendWebSocketMessage({
-                event: "STRIKE",
+                event: "strike",
                 body: { strikes: team2.strikes }
             });
         }
@@ -154,7 +179,7 @@ function addStrikes() {
         if (team1.strikes < 3) {
             team1.strikes++;
             sendWebSocketMessage({
-                event: "STRIKE",
+                event: "strike",
                 body: { strikes: team1.strikes }
             });
         }
@@ -165,7 +190,7 @@ function addStrikes() {
         renderIndex++;
         renderTeamById(teamspostproceded[renderIndex].id_local);
         sendWebSocketMessage({
-            event: "STRIKE",
+            event: "strike",
             body: { strikes: 1 }
         });
         if (renderIndex >= 2) {
@@ -217,11 +242,9 @@ function addScore(id, elementToRemove) {
 
 function asignRondaScoreToFirst() {
 
-    teamspostproceded[0].score += (currentRonda.score || 0);
-    console.log(teamspostproceded);
+
+    updateWinner(teamspostproceded[0], currentRonda.score);
     rondaTerminated = true;
-    updateWinnerById(teamspostproceded[0]);
-    resetRound();
 }
 
 function automaticRondaTermination() {
@@ -233,40 +256,31 @@ function automaticRondaTermination() {
 
         if (team2.strikes >= 1 && team3.strikes < 1) {
             console.log("Equipo ganador 3");
-            teamspostproceded[2].score += (currentRonda.score || 0);
-            console.log(teamspostproceded);
+            updateWinner(teamspostproceded[2], currentRonda.score);
             rondaTerminated = true;
-
-            updateWinnerById(teamspostproceded[2]);
             resetRound();
         }
 
         if (team1.strikes >= 3 && team2.strikes < 1) {
             console.log("Equipo ganador 2");
-            teamspostproceded[1].score += (currentRonda.score || 0);
-            console.log(teamspostproceded);
+            updateWinner(teamspostproceded[1], currentRonda.score);
             rondaTerminated = true;
-            updateWinnerById(teamspostproceded[1]);
-
             resetRound();
         }
     }
 
     if ((teamspostproceded[0].strikes < 3) && (contadorpreguntas >= 5) && (!selecionDeEquipos)) {
         console.log("Equipo ganador");
-        teamspostproceded[0].score += (currentRonda.score || 0);
-        console.log(teamspostproceded);
+        updateWinner(teamspostproceded[0], currentRonda.score);
         rondaTerminated = true;
         resetRound();
     }
 }
 
 function terminateGame() {
-    teams = app.getTeams();
-    const sorted = [...teams].sort((a, b) => a.score - b.score);
     sendWebSocketMessage({
-        event: "WINGAME ",
-        body: sorted[0]
+        event: "win-game",
+        body: null
     });
 }
 
@@ -288,12 +302,8 @@ function resetRound() {
     // Reset team selection state
     selecionDeEquipos = true;
     renderIndex = 0;
-    currentTeam = teamspostproceded.find((t) => t.id_local === 1);
+    currentTeam = {};
 
-    // Re-render current team
-    renderTeamById(currentTeam.id_local);
-
-    // Send win notification via WebSocket
 
 
     console.log("Round reset complete", teamspostproceded);
@@ -323,8 +333,15 @@ function renderRespuestas() {
                 automaticRondaTermination();
 
                 sendWebSocketMessage({
-                    event: "Respuesta",
-                    body: { id: respuesta.id }
+                    event: "show-answer",
+                    body: {
+                        round: {
+                            uuidv4: currentRonda.uuidv4,
+                            answer: {
+                                id: answer.id
+                            }
+                        }
+                    }
                 });
             });
 
@@ -343,7 +360,6 @@ let wrongBtn;
 async function initController() {
     while (app.rounds.length === 0) await sleep(400);
     rounds = app.rounds
-    //rounds = app.getRounds();
     const leftquestionBtn = document.getElementById("leftquestionBtn");
     const rightquestionshowBtn = document.getElementById("rightquestionshowBtn");
     const showBtn = document.getElementById("showBtn");
@@ -352,6 +368,10 @@ async function initController() {
     const TutuownBtn = document.getElementById("TutuownBtn");
     const resetBtn = document.getElementById("resetBtn");
     wrongBtn = document.getElementById("wrongBtn");
+    const enableBtn = document.getElementById("enableBtn");
+
+
+
 
     // Event listeners for controls
     wrongBtn.addEventListener("click", addStrikes);
@@ -363,8 +383,8 @@ async function initController() {
 
     showBtn.addEventListener("click", () => {
         sendWebSocketMessage({
-            event: "SHOWROUND",
-            body: { id: currentRonda ? currentRonda.id : null }
+            event: "show-round",
+            body: { round: { uuidv4: currentRonda.uuidv4 } }
         });
     });
 
@@ -373,7 +393,7 @@ async function initController() {
 
     TutuownBtn.addEventListener("click", () => {
         sendWebSocketMessage({
-            event: "TUTUsound",
+            event: "tutu-sound",
             body: null
         });
     });
@@ -382,6 +402,13 @@ async function initController() {
         resetBtn.addEventListener("click", resetRound);
     }
 
+    enableBtn.addEventListener("click", function () {
+        sendWebSocketMessage({
+            event: "enable-buttons",
+            body: { round: { uuidv4: currentRonda.uuidv4 } }
+        });
+
+    });
 
 
 }
