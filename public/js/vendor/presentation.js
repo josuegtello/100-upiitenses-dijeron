@@ -1,3 +1,4 @@
+import { sendWebSocketMessage } from "./controllers/websocket.js";
 import app from "./middlewares/app.js";
 import sleep from "./middlewares/sleep.js";
 
@@ -140,6 +141,33 @@ const clearStrikes=function(){
         $strike.classList.add("display-none");            
     }
 }
+
+const addTeam=function(){
+    const id=Number(d.querySelector("form input[name='team-number']").value),
+          name=d.querySelector("form input[name='team-name']").value,
+          teams=app.teams;
+    let uuidv4=null;
+    teams.forEach(team => {
+        if(team.id===id){
+            uuidv4=team.uuidv4;
+        }
+    });
+    const request={
+        event:"update-team",
+        body:{
+            team:{
+                uuidv4,
+                id,
+                name,
+                score:null
+            }
+        }
+    }
+    sendWebSocketMessage(request);
+    // Pasamos al siguiente equipo en automatico
+    if (id+1 <= 8) d.querySelector("form input[name='team-number']").value=id+1;
+    d.querySelector("form input[name='team-name']").value="";
+}
 const initPresentation=async function(){
 
     body.addEventListener("click",async (e)=>{
@@ -151,6 +179,29 @@ const initPresentation=async function(){
             await sleep(1000);
             $rules.classList.add("display-none")
         }
+        //Evento para agregar usuarios
+        else if($target.matches("input[name='add-team']")){
+            console.log("Agregar equipo")
+            addTeam()
+        }
+        else if($target.matches("input[name='finish']")){
+            const $questionary=d.querySelector(".questionary")
+            $questionary.classList.add("opacity-0","pointer-events-none")
+            sendWebSocketMessage({
+                event:"teams-setup-complete",
+                body:null
+            })
+            setTimeout(() => {
+                showQuestion()
+            }, 3000);
+        }
+    })
+
+    // INPUT EN MAYUSCULAS
+    const $inputTeamName=d.querySelector("form input[name='team-name']")
+    $inputTeamName.addEventListener("input", (e)=>{
+        e.stopPropagation()
+        e.target.value=e.target.value.toUpperCase();
     })
     
 }

@@ -56,13 +56,13 @@ const getOne=async function(id) {
 //  Actualizamos un equipo
 const update=async function (team) {
     try {
-        const {id,name,score}=team
+        const {uuidv4,name,score}=team
         const data={}
         if(name !== null) data.name=name;
         if(score != null) data.score=score; 
 
         // Actualizamos el registro
-        await Team.findByIdAndUpdate(id,data);
+        await Team.findByIdAndUpdate(uuidv4,data);
 
         return {
             status:200,

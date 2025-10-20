@@ -27,15 +27,43 @@ const handleOnMessage=function(e){
         app.rounds=rounds;
         console.log(app);
     }
+    else if(event === "all-obtained"){
+        const {rounds,teams} = body;
+        app.teams=teams;
+        app.rounds=rounds;
+        console.log(app);
+    }
+    //CALLBACK que se envia si el equipo se actualizo correctamente
+    else if(event === "team-updated"){
+        const {response,team}=body;
+        if (response.status === 200){ // Se actualizo correctamente el equipo
+            app.teams.forEach((tm,index) => {
+                if(tm.uuidv4=== team.uuidv4){
+                    app.teams[index]=team
+                }
+            });
+            console.log(response.statusText,app);
+        }
+        else{
+            console.log(`Error: ${response.statusText}`, team);
+        }
+    }
+
+
     // EVENTOS DEL CONTROLADOR
     // Evento que contiene los primeros 3 participantes 
     else if(event === "round-participants"){
         const {participants}=body;
         setRoundParticipants(participants);
     }
+    else if(event === "teams-setup-complete"){
+        console.log("Registro de equipos terminado")
+        const {teams}=body;
+        app.teams=teams;
+        console.log(app)
+    }
 
     // EVENTOS DE LA PRESENTACION
-
 
 };
 
@@ -51,9 +79,10 @@ const handleOnOpen=async function(event) {
         }
     });
     await sleep(200);
-    app.getTeams();
-    await sleep(200);
-    app.getRounds();
+    app.getAll();
+    //app.getTeams();
+    //await sleep(200);
+    //app.getRounds();
     await sleep(200);
     // CASO PARTICULAR - CONTROLADOR
     if(app.rol==="controller"){

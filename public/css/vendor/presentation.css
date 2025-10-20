@@ -218,8 +218,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    pointer-events: none;
-    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
 }
 .questionary form{
     display: flex;

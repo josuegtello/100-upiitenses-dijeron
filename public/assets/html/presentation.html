@@ -162,14 +162,16 @@
         class="text"
         name="team-number"
         id="team-number"
+        min="1"
+        max="8"
       />
       <label for="team-name" class="text" class="texto" placeholder="Nombre"
         >Nombre de equipo</label
       >
       <input type="text" class="text" id="team-name" name="team-name" />
       <div class="button-container">
-        <input type="button" class="text" value="Agregar" />
-        <input type="submit" class="text" value="Terminar" />
+        <input type="button" class="text" name="add-team" value="Agregar" />
+        <input type="button" class="text" name="finish" value="Terminar" />
       </div>
     </form>
   </section>
