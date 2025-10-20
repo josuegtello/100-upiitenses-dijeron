@@ -74,7 +74,7 @@ function updateWinner(team, score) {
 
 
     // Send WebSocket message with the postprocessed team data
-    await sleep(200);
+    //await sleep(200);
     sendWebSocketMessage({
         event: "winner-round",
         body: {
