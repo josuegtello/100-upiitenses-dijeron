@@ -3,13 +3,14 @@ import { sendWebSocketMessage, getReadyState } from "./controllers/websocket.js"
 import sleep from "./middlewares/sleep.js";
 //import uuidv4 from "../../../middlewares/uuidv4.js";
 
-const teamsprepocesed = [];
-const teamspostproceded = [];
+let teamsprepocesed = [];
+let teamspostproceded = [];
 let currentTeam = null;
 let selecionDeEquipos = true;
 let renderIndex = 0;
 let contadorpreguntas = 0;
 let currentQuestionIndex = 1;
+let isRoundShown = false; // Track if show button has been clicked
 
 
 
@@ -19,8 +20,8 @@ async function setQuestion(newId) {
     document.getElementById("pregunta").textContent = getPreguntaById(newId);
 
     currentRonda = setRonda(newId);
-
-    renderRespuestas();
+    isRoundShown = false; // Reset when question changes
+    clearRespuestas(); // Clear answers until show is clicked
 }
 
 
@@ -73,8 +74,7 @@ const setRoundParticipants = function (participants) {
 function updateWinner(team, score) {
 
 
-    // Send WebSocket message with the postprocessed team data
-    //await sleep(200);
+
     sendWebSocketMessage({
         event: "winner-round",
         body: {
@@ -250,6 +250,7 @@ function asignRondaScoreToFirst() {
 
     updateWinner(teamspostproceded[0], currentRonda.score);
     rondaTerminated = true;
+
 }
 
 function automaticRondaTermination() {
@@ -274,7 +275,7 @@ function automaticRondaTermination() {
         }
     }
 
-    if ((teamspostproceded[0].strikes < 3) && (contadorpreguntas >= currentRonda.length) && (!selecionDeEquipos)) {
+    if ((teamspostproceded[0].strikes < 3) && (contadorpreguntas >= currentRonda.answers.length) && (!selecionDeEquipos)) {
 
         updateWinner(teamspostproceded[0], currentRonda.score);
         rondaTerminated = true;
@@ -310,9 +311,20 @@ function hardRoundReset() {
     currentTeam = null;
 
     contadorpreguntas = 0;
+    isRoundShown = false; // Reset show state
 
-    renderRespuestas();
+    clearRespuestas(); // Clear answers
 
+    // Disable buttons at the beginning
+    const countdownBtn = document.getElementById("countdownBtn");
+    const wrongBtn = document.getElementById("wrongBtn");
+    const TutuownBtn = document.getElementById("TutuownBtn");
+    const enableBtn = document.getElementById("enableBtn");
+
+    if (countdownBtn) disableButton(countdownBtn);
+    if (wrongBtn) disableButton(wrongBtn);
+    if (TutuownBtn) disableButton(TutuownBtn);
+    if (enableBtn) disableButton(enableBtn);
 
 }
 
@@ -341,12 +353,33 @@ function resetRound() {
     currentTeam = null;
 
     contadorpreguntas = 0;
+    isRoundShown = false; // Reset show state
 
+    // Disable buttons at the beginning
+    const countdownBtn = document.getElementById("countdownBtn");
+    const wrongBtn = document.getElementById("wrongBtn");
+    const TutuownBtn = document.getElementById("TutuownBtn");
+    const enableBtn = document.getElementById("enableBtn");
+
+    if (countdownBtn) disableButton(countdownBtn);
+    if (wrongBtn) disableButton(wrongBtn);
+    if (TutuownBtn) disableButton(TutuownBtn);
+    if (enableBtn) disableButton(enableBtn);
 
     console.log("Round reset complete", teamspostproceded);
 }
 
+function clearRespuestas() {
+    const contenedor = document.querySelector(".contendorespuestas");
+    contenedor.innerHTML = '';
+}
+
 function renderRespuestas() {
+    // Only render if show button has been clicked
+    if (!isRoundShown) {
+        return;
+    }
+
     const contenedor = document.querySelector(".contendorespuestas");
 
     // Clear existing answers efficiently
@@ -367,7 +400,6 @@ function renderRespuestas() {
                     contadorpreguntas++;
 
                 }
-                automaticRondaTermination();
 
                 sendWebSocketMessage({
                     event: "show-answer",
@@ -380,6 +412,7 @@ function renderRespuestas() {
                         }
                     }
                 });
+                automaticRondaTermination();
             });
 
             fragment.appendChild(p);
@@ -417,6 +450,8 @@ async function initController() {
 
     showBtn.addEventListener("click", () => {
         enableButton(enableBtn);
+        isRoundShown = true; // Mark round as shown
+        renderRespuestas(); // Now render the answers
         sendWebSocketMessage({
             event: "show-round",
             body: { round: { uuidv4: currentRonda.uuidv4 } }
