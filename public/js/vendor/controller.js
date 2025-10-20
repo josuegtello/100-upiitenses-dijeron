@@ -450,8 +450,8 @@ async function initController() {
 
     showBtn.addEventListener("click", () => {
         enableButton(enableBtn);
-        isRoundShown = true; // Mark round as shown
-        renderRespuestas(); // Now render the answers
+        isRoundShown = true;
+        renderRespuestas(); 
         sendWebSocketMessage({
             event: "show-round",
             body: { round: { uuidv4: currentRonda.uuidv4 } }
@@ -522,10 +522,7 @@ async function initController() {
         }, 1000);
 
 
-        if (pressCount < 5) {
-
-        }
-        else {
+        if (pressCount > 5) {
             console.log("HARD RESET TRIGGERED!");
             pressCount = 0;
             sendWebSocketMessage({
