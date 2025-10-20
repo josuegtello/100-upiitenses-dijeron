@@ -1,6 +1,7 @@
 import app from "./middlewares/app.js";
 import { sendWebSocketMessage, getReadyState } from "./controllers/websocket.js";
 import sleep from "./middlewares/sleep.js";
+//import uuidv4 from "../../../middlewares/uuidv4.js";
 
 const teamsprepocesed = [];
 const teamspostproceded = [];
@@ -70,19 +71,19 @@ const setRoundParticipants = function (participants) {
 
 
 
-function updateWinner(team, score) {
+async function updateWinner(team, score) {
     console.log(`Updating winner: ${team.name}`);
     console.log(`Updating winner: ${team.id}`);
     console.log(`uuidv4 : ${team.uuidv4}`);
 
     // Send WebSocket message with the postprocessed team data
+    await sleep(200);
     sendWebSocketMessage({
         event: "winner-round",
         body: {
             team: {
-
-                id: team.uuidv4,
-                score: score
+                uuidv4: team.uuidv4,
+                current_score: score
             }
         }
     });

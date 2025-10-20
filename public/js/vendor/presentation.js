@@ -15,9 +15,10 @@ const updateActualScore=function(){
     const $score=d.querySelector(".points")
     $score.value=board.actualScore
 }
-const showQuestion=async function(){
-    const question=board.actualQuestion,
-          $questionInput=d.querySelector(".question"),
+const showQuestion=async function(round){
+    const question=`${round.id}.${round.question.toUpperCase()}`
+    console.log(question)
+    const $questionInput=d.querySelector(".question"),
           interval=1000/question.length
     for (let i = 0; i < question.length; i++) {
         let txtAnimation="";
@@ -32,21 +33,21 @@ const clearQuestion=function(){
     const $questionInput=d.querySelector(".question")
     $questionInput.value=""
 }
-const updateScoreTeam=function(team){
+const updateScoreTeam=function(team,play=true){
     const {id,score}=team,
           audio=new Audio("../../assets/audio/puntos.mp3"),
           $team=d.querySelector(`[data-team="${id}"]`);
     $team.value=score
-    audio.play()
+    if(play) audio.play()
 }
-const showTeam = async function(){
-    const team=board.actualTeam,
-          $teamInput=d.querySelector(".team"),
-          interval=1000/team.length
-    for (let i = 0; i < team.length; i++) {
+const showTeam = async function(team){
+    const name=`E${team.id}.${team.name}`
+    const $teamInput=d.querySelector(".team"),
+          interval=1000/name.length
+    for (let i = 0; i < name.length; i++) {
         let txtAnimation="";
         for (let j = 0; j <= i; j++) {
-            txtAnimation=txtAnimation+team[j];
+            txtAnimation=txtAnimation+name[j];
         }
         $teamInput.value=txtAnimation;
         await sleep(interval)
@@ -57,7 +58,7 @@ const clearTeam=function(){
     $teamInput.value=""
 }
 const showAnswer = async function(answer){
-    let {id,text,points}=answer
+    let {id,text,score}=answer
     text=`${id}.${text}`
     const audio=new Audio("../../assets/audio/correcto_respuesta.mp3"),
           lenght=text.length,
@@ -65,7 +66,7 @@ const showAnswer = async function(answer){
           $container=d.querySelector(`[data-answer="${id}"]`),
           $answer = $container.querySelector(".answer"),
           $score = $container.querySelector(".score-answer");
-    console.log(id,text,points);
+    console.log(id,text,score);
     audio.play();
     for (let i = 0; i < lenght; i++) {
         let txtAnimation="";
@@ -75,8 +76,8 @@ const showAnswer = async function(answer){
         $answer.value=txtAnimation;
         await sleep(interval);
     }
-    $score.value=points;
-    board.actualScore=board.actualScore+points;
+    $score.value=score;
+    board.actualScore=board.actualScore+score;
     updateActualScore()
 }
 const clearAnswer = async function(answer){
@@ -111,22 +112,28 @@ const initRound= function(round){
     clearQuestion()
     clearTeam()
     updateActualScore()
-    const $questionInput=d.querySelector(".question")
+    const $questionInput=d.querySelector(".question"),
+        $led=d.querySelector(".led");
+    $led.classList.remove("led-on");
+    $led.classList.add("led-off");
     $questionInput.value=`RONDA ${id}`
     audio.play()
 }
-const addStrike=async function(){
+const showStrikes=async function(strikes){
     const $container=d.querySelector(".strikes-container"),
-          audio=new Audio("../../assets/audio/incorrecto.mp3");
-    $container.classList.remove("opacity-0")
-    if(board.actualStrikes+1<=3){
-        board.actualStrikes=board.actualStrikes+1
-        for (let i = 1; i <= board.actualStrikes; i++) {
-            const $strike=d.querySelector(`[data-strike="${i}"]`)
-            $strike.classList.remove("display-none");
+          audio=new Audio("../../assets/audio/incorrecto.mp3"),
+          $strikes=d.querySelectorAll(".strike")
 
+    $strikes.forEach($strike => {
+        $strike.classList.add(".display-none")
+    });
+    $container.classList.remove("opacity-0")
+    $strikes.forEach(($strike,index) => {
+        console.log(index+1,strikes)
+        if(index+1<=strikes){
+            $strike.classList.remove("display-none");
         }
-    }
+    });
     audio.play()
     await sleep(2000)
     $container.classList.add('opacity-0')
@@ -141,7 +148,6 @@ const clearStrikes=function(){
         $strike.classList.add("display-none");            
     }
 }
-
 const addTeam=function(){
     const id=Number(d.querySelector("form input[name='team-number']").value),
           name=d.querySelector("form input[name='team-name']").value,
@@ -168,6 +174,85 @@ const addTeam=function(){
     if (id+1 <= 8) d.querySelector("form input[name='team-number']").value=id+1;
     d.querySelector("form input[name='team-name']").value="";
 }
+
+            // 2. Función que lanza un "chorro" de confeti
+        async function frame() {
+            const duration = 120 * 1000; // 30 segundos
+            const animationEnd = Date.now() + duration;
+
+            // 3. Define el delay. Te recomiendo 100ms para empezar (no 5ms)
+            const delay = 150; 
+            await sleep(800);
+            // 4. Creamos un bucle 'while' que se ejecuta
+            //    mientras no se acabe el tiempo.
+            while (Date.now() < animationEnd) {
+                
+                confetti({
+                    particleCount: 5, // Mantenemos pocas partículas por chorro
+                    angle: 90,        
+                    spread: 80,       
+                    origin: { 
+                        x: Math.random(), 
+                        y: 0              
+                    },
+                    colors: [
+                        '#FF4500', 
+                        '#FFD700', 
+                        '#FFFFFF', 
+                        '#00BFFF', 
+                        '#32CD32'  
+                    ], 
+                    shapes: ['square', 'circle'],
+                    scalar: 2,      
+                    gravity: 0.3,     
+                    ticks: 2000        
+                });
+
+                // 5. ¡La magia! Pausamos la ejecución por 'delay' ms
+                await sleep(delay);
+            }
+        }
+const winGame=async function(teams){
+    const teamWinner=teams[0]
+    const text=`GANADOR DEL JUEGO E${teamWinner.id}.${teamWinner.name} - SCORE:${teamWinner.score}`;
+    const audio=new Audio("../../assets/audio/cumbia_ganadora.mp3");
+    audio.play();
+    audio.volume=0.5;
+    // Configuración para un efecto de "caída" más realista
+    frame();
+    const $questionInput=d.querySelector(".question"),
+          interval=2000/text.length
+    for (let i = 0; i < text.length; i++) {
+        let txtAnimation="";
+        for (let j = 0; j <= i; j++) {
+            txtAnimation=txtAnimation+text[j];
+        }
+        $questionInput.value=txtAnimation;
+        await sleep(interval)
+    }
+    const text2="GRACIAS POR JUGAR"
+    const $teamInput=d.querySelector(".team"),
+          interval2=1500/text2.length
+    for (let i = 0; i < text2.length; i++) {
+        let txtAnimation="";
+        for (let j = 0; j <= i; j++) {
+            txtAnimation=txtAnimation+text2[j];
+        }
+        $teamInput.value=txtAnimation;
+        await sleep(interval2)
+    }
+
+}
+
+const playTutuSound=function(){
+    const audio=new Audio("../../assets/audio/tutu.mp3");
+    audio.play();
+}
+const playButtonPressed=function(){
+    const audio=new Audio("../../assets/audio/boton_presionado.mp3");
+    audio.play();
+}
+
 const initPresentation=async function(){
 
     body.addEventListener("click",async (e)=>{
@@ -191,9 +276,6 @@ const initPresentation=async function(){
                 event:"teams-setup-complete",
                 body:null
             })
-            setTimeout(() => {
-                showQuestion()
-            }, 3000);
         }
     })
 
@@ -206,6 +288,7 @@ const initPresentation=async function(){
     
 }
 
+
 export {
     initPresentation,
     updateActualScore,
@@ -216,8 +299,11 @@ export {
     clearTeam,
     showAnswer,
     clearAnswer,
-    addStrike,
+    showStrikes,
     clearStrike,
     clearStrikes,
-    initRound
+    initRound,
+    playTutuSound,
+    winGame,
+    playButtonPressed
 }

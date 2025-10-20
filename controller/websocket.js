@@ -7,6 +7,7 @@ const clients=new Map();    // Todos los clientes WebSocket
 const controller=new Map();
 const presentation=new Map();
 const iot=new Map();
+const participants=[];
 
 const addClient=function(ws,metadata){
     clients.set(ws,{ metadata: metadata });
@@ -27,6 +28,7 @@ const onMessage=async function(ws,data){
             presentation.set(ws,metadata)
         }
         else if(rol === "iot-device"){
+            console.log("Asignando dispositivo IoT");
             iot.set(ws,metadata)
         }
         const callback={
@@ -157,8 +159,9 @@ const onMessage=async function(ws,data){
     // ACTUALIZO GANADOR
     else if(event === "winner-round"){
         const {team:tm}=body,
-              dataToUpdate=await team.getOne(tm.uuidv4),
-              teamToUpdate={
+            dataToUpdate=await team.getOne(tm.uuidv4);
+        console.log(dataToUpdate)
+        const  teamToUpdate={
                 uuidv4:dataToUpdate._id.toString(),
                 id:dataToUpdate.id,
                 name:dataToUpdate.name,
@@ -237,6 +240,7 @@ const onMessage=async function(ws,data){
             event,
             body
         }
+        participants.length=0;
         // Mensaje a la presentacion
         presentation.forEach((metadata,client) => {
                 client.send(JSON.stringify(callback));
@@ -274,34 +278,152 @@ const onMessage=async function(ws,data){
             event,
             body
         }
-        // Mensaje a la presentacion
-        presentation.forEach((metadata,client) => {
-                client.send(JSON.stringify(callback));
-        });
         // Mensaje a dispositivos IoT
         iot.forEach((metadata,client) => {
                 client.send(JSON.stringify(callback));
         });
+        // Mensaje a la presentacion
+        presentation.forEach((metadata,client) => {
+                client.send(JSON.stringify(callback));
+        });
+        
     }
+    // RESTA DE PUNTOS SI SE PRESIONA ANTES EL BOTON
+    else if(event === "subtract-score"){
+        console.log("Restango puntos a equipo")
+        const {team:tmIot}=body,
+              data=await team.getAll(),
+              teams=data.map(teami =>{
+                  const {_id,id,name,score}=teami
+                  return{
+                      uuidv4:_id.toString(),
+                      id,
+                      name,
+                      score
+                  }
+              })
+        let dataToUpdate=null;
+        teams.forEach((tm) => {
+            if(tm.id==tmIot.id){
+                dataToUpdate=tm
+            }
+        });
+        if(dataToUpdate!=null){
+            const  teamToUpdate={
+                    uuidv4:dataToUpdate.uuidv4,
+                    id:dataToUpdate.id,
+                    name:dataToUpdate.name,
+                    score:dataToUpdate.score
+                }
+            teamToUpdate.score=teamToUpdate.score-50;
+            const response= await team.update(teamToUpdate),
+                  callback={
+                    event:"team-updated",
+                    body:{
+                        response,
+                        team:teamToUpdate
+                    }
+                  }
+            presentation.forEach((metadata,client) => {
+                client.send(JSON.stringify(callback));
+            });
+            controller.forEach((metadata,client) => {
+                client.send(JSON.stringify(callback));
+            });
+        }
 
+    }
+    // BOTON PRESIONADO
+    else if(event === "button-pressed"){
+        console.log("Boton presionado")
+        const {team:tmIot}=body;
+        let added=false;
+        participants.forEach(participant => {
+            if(participant.id === tmIot.id){
+                added=true;
+            }
+        });
+        //No estaba agregado anteriormente, lo agregamos
+        if(added === false && participants.length<3){
+            const data=await team.getAll(),
+                  teams=data.map(teami =>{
+                    const {_id,id,name,score}=teami
+                    return{
+                        uuidv4:_id.toString(),
+                        id,
+                        name,
+                        score
+                    }
+                })
+            let teamExisted=null;
+            teams.forEach((tm) => {
+                if(tm.id==tmIot.id){
+                    teamExisted=tm
+                }
+            });
+            if(teamExisted){
+                participants.push({
+                    uuidv4:teamExisted.uuidv4,
+                    id:teamExisted.id
+                })
+                //Si es 1 es el primero, mando el audio a la presentacion
+                if(participants.length===1){
+                    console.log("Mandando mensaje a presentacion del primero en presionar")
+                    const callback={
+                        event,
+                        body:null
+                    }
+                    presentation.forEach((metadata,client) => {
+                        client.send(JSON.stringify(callback));
+                    });
+                }
+
+                //Si es 3 ya fueron los primeros tres equipos, lanzo el evento
+                if(participants.length===3){
+                    const callback={
+                        event:"round-participants",
+                        body:{
+                            participants
+                        }
+                    }
+                    controller.forEach((metadata,client) => {
+                        client.send(JSON.stringify(callback));
+                    });
+                }
+                console.log(participants)
+            }
+        }
+        else{
+            console.log("Equipo ya presiono el boton")
+        }
+    }
     //COMANDOS DE PRUEBA
     // -CONTROLADOR
     else if(event === "test-participants"){
-        const idTeams=[
-            {
-                uuidv4: "68f560760b2c1734c1eec4a9"
-            },
-            {
-                uuidv4: "68f5607f0b2c1734c1eec4aa"
-            },
-            {
-                uuidv4: "68f560870b2c1734c1eec4ab"
-            }
-        ]
+        const data=await team.getAll(),
+              teams=data.map(team =>{
+                  const {_id,id,name,score}=team
+                  return{
+                      uuidv4:_id.toString(),
+                      id,
+                      name,
+                      score
+                  }
+              })
         const callback={
             event:"round-participants",
             body:{
-                participants:idTeams
+                participants:[
+                    {
+                        uuidv4:teams[0].uuidv4
+                    },
+                    {
+                        uuidv4:teams[1].uuidv4
+                    },
+                    {
+                        uuidv4:teams[2].uuidv4
+                    }
+                ]
             }
         }
         console.log(callback)

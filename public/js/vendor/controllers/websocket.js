@@ -1,6 +1,8 @@
 import sleep from "../middlewares/sleep.js";
 import app from "../middlewares/app.js";
 import { setRoundParticipants } from "../controller.js";
+import { initRound, showAnswer, showStrikes, showTeam ,updateScoreTeam, playTutuSound, showQuestion,winGame,playButtonPressed} from "../presentation.js";
+
 const d=document;
 
 let connection={
@@ -32,6 +34,9 @@ const handleOnMessage=function(e){
         app.teams=teams;
         app.rounds=rounds;
         console.log(app);
+        teams.forEach(team => {
+            updateScoreTeam(team,false);
+        });
     }
     //CALLBACK que se envia si el equipo se actualizo correctamente
     else if(event === "team-updated"){
@@ -43,13 +48,14 @@ const handleOnMessage=function(e){
                 }
             });
             console.log(response.statusText,app);
+            if(app.rol==="presentation"){
+                updateScoreTeam(team,false);
+            }
         }
         else{
             console.log(`Error: ${response.statusText}`, team);
         }
     }
-
-
     // EVENTOS DEL CONTROLADOR
     // Evento que contiene los primeros 3 participantes 
     else if(event === "round-participants"){
@@ -64,6 +70,74 @@ const handleOnMessage=function(e){
     }
 
     // EVENTOS DE LA PRESENTACION
+    else if(event=== "show-round"){
+        const {round} = body,
+              rounds = app.rounds
+        rounds.forEach(rd => {
+            if(rd.uuidv4 === round.uuidv4){
+                initRound(rd);
+            }
+        });
+    }
+    else if(event === "show-answer"){
+        const {round} = body,
+              rounds=app.rounds
+        rounds.forEach(rd => {
+            if(rd.uuidv4 === round.uuidv4){
+                rd.answers.forEach(answer => {
+                    if(answer.id=== round.answer.id){
+                        showAnswer(answer);
+                    }
+                });
+            }
+        });
+    }
+    else if(event === "strike"){
+        const {strikes}=body;
+        showStrikes(strikes)
+    }
+    else if(event === "show-team"){
+        const {team}=body,
+              teams = app.teams
+        teams.forEach(tm => {
+            if(team.uuidv4 === tm.uuidv4){
+                showTeam(tm);
+            }
+        });
+    }
+    else if(event === "winner-round"){
+        const {team}=body,
+              teams = app.teams
+        teams.forEach((tm,index) => {
+            if(team.uuidv4 === tm.uuidv4){
+                app.teams[index]=team;
+                updateScoreTeam(team);
+            }
+        });
+    }
+    else if(event === "tutu-sound"){
+        playTutuSound()
+    }
+    else if(event === "enable-buttons"){
+        const {round}=body,
+                rounds=app.rounds;
+        rounds.forEach(rd => {
+            if(round.uuidv4 === rd.uuidv4){
+                showQuestion(rd)
+            }
+        });
+        const $led=d.querySelector(".led");
+        $led.classList.remove("led-off");
+        $led.classList.add("led-on");
+    }
+    else if(event === "win-game"){
+        const {teams}=body;
+        winGame(teams);
+    }
+    else if(event === "button-pressed"){
+        playButtonPressed();
+    }
+
 
 };
 
