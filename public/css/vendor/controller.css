@@ -103,11 +103,21 @@
     background-color: #ff0080;
 }
 
+.primary.disabled {
+    pointer-events: none;
+    background-color: #8c8c8cff;
+    opacity: 0.6;
+    /* optional */
+}
 .wrong {
     color: white;
     background-color: red;
 }
 
+.wrong.disabled {
+    pointer-events: none;
+    background-color: #8c8c8cff;
+}
 .contenedoresbotones>button:hover {
     transform: scale(1.2);
 
