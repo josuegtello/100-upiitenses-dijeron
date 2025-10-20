@@ -4,7 +4,7 @@ import sleep from "./middlewares/sleep.js";
 
 const teamsprepocesed = [];
 const teamspostproceded = [];
-let currentTeam = teamspostproceded.find((t) => t.id_local === 1);
+let currentTeam = null;
 let selecionDeEquipos = true;
 let renderIndex = 0;
 let contadorpreguntas = 0;
@@ -62,8 +62,7 @@ const setRoundParticipants = function (participants) {
             current_score: 0,
         })
     });
-    console.log(`pre ${JSON.stringify(teamsprepocesed[0])} `);
-    console.log(`post ${JSON.stringify(teamspostproceded[0])}`);
+
     currentTeam = teamspostproceded.find((t) => t.id_local === 1);
     renderTeamById(currentTeam.id_local);
 }
@@ -71,9 +70,7 @@ const setRoundParticipants = function (participants) {
 
 
 function updateWinner(team, score) {
-    console.log(`Updating winner: ${team.name}`);
-    console.log(`Updating winner: ${team.id}`);
-    console.log(`uuidv4 : ${team.uuidv4}`);
+
 
     // Send WebSocket message with the postprocessed team data
     sendWebSocketMessage({
@@ -81,8 +78,8 @@ function updateWinner(team, score) {
         body: {
             team: {
 
-                id: team.uuidv4,
-                score: score
+                uuidv4: team.uuidv4,
+                current_score: score
             }
         }
     });
@@ -92,7 +89,8 @@ function nextquestion() {
     if (currentQuestionIndex < rounds.length) {
         currentQuestionIndex++;
         setQuestion(currentQuestionIndex);
-        console.log({ currentQuestionIndex });
+        resetRound()
+
     }
 }
 
@@ -100,7 +98,8 @@ function prevquestion() {
     if (currentQuestionIndex > 1) {
         currentQuestionIndex--;
         setQuestion(currentQuestionIndex);
-        console.log({ currentQuestionIndex });
+        resetRound()
+
     }
 }
 
@@ -143,10 +142,18 @@ function ableButton() {
     wrongBtn.style.backgroundColor = '#ff0000ff';
 }
 
+function disableButton(btn) {
+    btn.classList.add('disabled');
+}
+
+function enableButton(btn) {
+    btn.classList.remove('disabled');
+}
+
+
 function addStrikes() {
     if (!selecionDeEquipos) {
-        console.log("patrulla");
-        console.log(teamspostproceded);
+
         const team1 = teamspostproceded[0];
         const team2 = teamspostproceded[1];
         const team3 = teamspostproceded[2];
@@ -195,7 +202,6 @@ function addStrikes() {
         });
         if (renderIndex >= 2) {
             teamspostproceded.sort((a, b) => b.current_score - a.current_score);
-            console.log(teamspostproceded);
             renderTeamById(teamspostproceded[0].id_local);
             selecionDeEquipos = false;
             return;
@@ -223,14 +229,12 @@ function addScore(id, elementToRemove) {
         if (id === 1) {
             teamspostproceded.sort((a, b) => b.current_score - a.current_score);
             currentTeam = teamspostproceded[0];
-            console.log(teamspostproceded);
             selecionDeEquipos = false;
             return;
         }
         renderIndex++;
         if (renderIndex >= 2) {
             teamspostproceded.sort((a, b) => b.current_score - a.current_score);
-            console.log(teamspostproceded);
             renderTeamById(teamspostproceded[0].id_local);
             selecionDeEquipos = false;
             return;
@@ -242,35 +246,34 @@ function addScore(id, elementToRemove) {
 
 function asignRondaScoreToFirst() {
 
-
     updateWinner(teamspostproceded[0], currentRonda.score);
     rondaTerminated = true;
 }
 
 function automaticRondaTermination() {
-    console.log(teamspostproceded);
+
     if (!selecionDeEquipos) {
         const team1 = teamspostproceded[0];
         const team2 = teamspostproceded[1];
         const team3 = teamspostproceded[2];
 
         if (team2.strikes >= 1 && team3.strikes < 1) {
-            console.log("Equipo ganador 3");
+
             updateWinner(teamspostproceded[2], currentRonda.score);
             rondaTerminated = true;
             resetRound();
         }
 
         if (team1.strikes >= 3 && team2.strikes < 1) {
-            console.log("Equipo ganador 2");
+
             updateWinner(teamspostproceded[1], currentRonda.score);
             rondaTerminated = true;
             resetRound();
         }
     }
 
-    if ((teamspostproceded[0].strikes < 3) && (contadorpreguntas >= 5) && (!selecionDeEquipos)) {
-        console.log("Equipo ganador");
+    if ((teamspostproceded[0].strikes < 3) && (contadorpreguntas >= currentRonda.length) && (!selecionDeEquipos)) {
+
         updateWinner(teamspostproceded[0], currentRonda.score);
         rondaTerminated = true;
         resetRound();
@@ -284,8 +287,8 @@ function terminateGame() {
     });
 }
 
-function resetRound() {
-    console.log("Resetting round...");
+function hardRoundReset() {
+    console.log("Hard-Round-resetting...");
 
     // Reset all team strikes
     teamspostproceded.forEach(team => {
@@ -302,8 +305,40 @@ function resetRound() {
     // Reset team selection state
     selecionDeEquipos = true;
     renderIndex = 0;
-    currentTeam = {};
+    currentTeam = null;
 
+    contadorpreguntas = 0;
+
+    renderRespuestas();
+
+
+}
+
+function resetRound() {
+    console.log("Resetting round...");
+
+    // Reset all team strikes
+    teamspostproceded.forEach(team => {
+        team.strikes = 0;
+        team.current_score = 0;
+    });
+
+    teamsprepocesed = [];
+    teamspostproceded = [];
+
+    // Reset round state (but NOT contadorpreguntas - keep answered questions)
+    rondaTerminated = false;
+    if (currentRonda) {
+        currentRonda.score = 0;
+    }
+    currentRonda = null;
+
+    // Reset team selection state
+    selecionDeEquipos = true;
+    renderIndex = 0;
+    currentTeam = null;
+
+    contadorpreguntas = 0;
 
 
     console.log("Round reset complete", teamspostproceded);
@@ -328,7 +363,7 @@ function renderRespuestas() {
                 if (!rondaTerminated) {
                     addScore(answer.id, event.currentTarget);
                     contadorpreguntas++;
-                    console.log(contadorpreguntas);
+
                 }
                 automaticRondaTermination();
 
@@ -354,7 +389,7 @@ function renderRespuestas() {
 
 let rondaTerminated = false;
 let rounds = [];
-let currentRonda;
+let currentRonda = null;
 let wrongBtn;
 
 async function initController() {
@@ -369,19 +404,17 @@ async function initController() {
     const resetBtn = document.getElementById("resetBtn");
     wrongBtn = document.getElementById("wrongBtn");
     const enableBtn = document.getElementById("enableBtn");
+    const hardResetBtn = document.getElementById("hardResetBtn");
+    let pressCount = 0;
 
-
-
-
-    // Event listeners for controls
     wrongBtn.addEventListener("click", addStrikes);
     setQuestion(currentQuestionIndex);
-
 
     leftquestionBtn.addEventListener("click", prevquestion);
     rightquestionshowBtn.addEventListener("click", nextquestion);
 
     showBtn.addEventListener("click", () => {
+        enableButton(enableBtn);
         sendWebSocketMessage({
             event: "show-round",
             body: { round: { uuidv4: currentRonda.uuidv4 } }
@@ -399,10 +432,40 @@ async function initController() {
     });
 
     if (resetBtn) {
-        resetBtn.addEventListener("click", resetRound);
+        resetBtn.addEventListener("click", () => {
+
+            pressCount++;
+            document.documentElement.style.setProperty("--darkcolor", "white");
+
+            setTimeout(() => {
+                document.documentElement.style.setProperty("--darkcolor", "#372c4d");
+            }, 1000);
+
+
+            if (pressCount < 2) {
+
+            }
+            else {
+                hardRoundReset()
+            }
+
+
+        }
+
+
+
+
+
+
+
+
+        );
     }
 
     enableBtn.addEventListener("click", function () {
+        enableButton(countdownBtn);
+        enableButton(wrongBtn);
+        enableButton(TutuownBtn);
         sendWebSocketMessage({
             event: "enable-buttons",
             body: { round: { uuidv4: currentRonda.uuidv4 } }
@@ -410,6 +473,30 @@ async function initController() {
 
     });
 
+
+
+
+    hardResetBtn.addEventListener("click", () => {
+        pressCount++;
+        document.documentElement.style.setProperty("--darkcolor", "red");
+
+        setTimeout(() => {
+            document.documentElement.style.setProperty("--darkcolor", "#372c4d");
+        }, 1000);
+
+
+        if (pressCount < 5) {
+
+        }
+        else {
+            console.log("HARD RESET TRIGGERED!");
+            pressCount = 0;
+            sendWebSocketMessage({
+                event: "hard-reset",
+                body: null
+            });
+        }
+    });
 
 }
 
