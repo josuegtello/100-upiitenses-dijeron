@@ -1,5 +1,8 @@
 import app from "./middlewares/app.js";
-import { sendWebSocketMessage, getReadyState } from "./controllers/websocket.js";
+import {
+    sendWebSocketMessage,
+    getReadyState,
+} from "./controllers/websocket.js";
 import sleep from "./middlewares/sleep.js";
 //import uuidv4 from "../../../middlewares/uuidv4.js";
 
@@ -10,48 +13,42 @@ let selecionDeEquipos = true;
 let renderIndex = 0;
 let contadorpreguntas = 0;
 let currentQuestionIndex = 1;
-let isRoundShown = false; // Track if show button has been clicked
-
-
-
-
+let isRoundShown = false;
 async function setQuestion(newId) {
     document.getElementById("id_pregunta").textContent = newId;
     document.getElementById("pregunta").textContent = getPreguntaById(newId);
 
+    clearRespuestas();
     currentRonda = setRonda(newId);
-    isRoundShown = false; // Reset when question changes
-    clearRespuestas(); // Clear answers until show is clicked
+    currentRonda.current_score = 0;
+    console.log(currentRonda);
+    isRoundShown = false;
 }
 
-
-
 function getPreguntaById(id) {
-    const ronda = rounds.find(r => r.id === id);
+    const ronda = rounds.find((r) => r.id === id);
     return ronda ? ronda.question : null;
 }
 
 function setRonda(id) {
-    return rounds.find(r => r.id === id);
+
+    return rounds.find((r) => r.id === id);
 }
 
-
-
-
-
 const setRoundParticipants = function (participants) {
+    teamsprepocesed = [];
+    teamspostproceded = [];
 
-    participants.forEach(participant => {
+    participants.forEach((participant) => {
         const teams = app.teams;
-        teams.forEach(team => {
-
+        teams.forEach((team) => {
             if (participant.uuidv4 === team.uuidv4) {
-                console.log(`participante encontrado ${team.name}`)
-                const { uuidv4, id, name } = team
+                console.log(`participante encontrado ${team.name}`);
+                const { uuidv4, id, name } = team;
                 teamsprepocesed.push({
                     uuidv4,
                     id,
-                    name
+                    name,
                 });
             }
         });
@@ -62,14 +59,12 @@ const setRoundParticipants = function (participants) {
             id_local: index + 1,
             strikes: 0,
             current_score: 0,
-        })
+        });
     });
 
     currentTeam = teamspostproceded.find((t) => t.id_local === 1);
     renderTeamById(currentTeam.id_local);
-}
-
-
+};
 
 function updateWinner(team, score) {
 
@@ -79,29 +74,34 @@ function updateWinner(team, score) {
         event: "winner-round",
         body: {
             team: {
-
                 uuidv4: team.uuidv4,
-                current_score: score
-            }
-        }
+                current_score: score,
+            },
+        },
     });
+
 }
 
 function nextquestion() {
     if (currentQuestionIndex < rounds.length) {
         currentQuestionIndex++;
+        resetRound();
+        rondaTerminated = false;
         setQuestion(currentQuestionIndex);
-        resetRound()
 
+        console.log(currentRonda);
+        console.log(currentRonda.answers.length);
     }
 }
 
 function prevquestion() {
     if (currentQuestionIndex > 1) {
         currentQuestionIndex--;
+        resetRound();
+        rondaTerminated = false;
         setQuestion(currentQuestionIndex);
-        resetRound()
-
+        console.log(currentRonda);
+        console.log(currentRonda.answers.length);
     }
 }
 
@@ -121,9 +121,9 @@ function renderTeamById(_id_local) {
         event: "show-team",
         body: {
             team: {
-                uuidv4: team.uuidv4
-            }
-        }
+                uuidv4: team.uuidv4,
+            },
+        },
     });
 }
 
@@ -135,27 +135,25 @@ function startCountdown() {
 }
 
 function unableButton() {
-    wrongBtn.style.pointerEvents = 'none';
-    wrongBtn.style.backgroundColor = '#8c8c8cff';
+    wrongBtn.style.pointerEvents = "none";
+    wrongBtn.style.backgroundColor = "#8c8c8cff";
 }
 
 function ableButton() {
-    wrongBtn.style.pointerEvents = 'auto';
-    wrongBtn.style.backgroundColor = '#ff0000ff';
+    wrongBtn.style.pointerEvents = "auto";
+    wrongBtn.style.backgroundColor = "#ff0000ff";
 }
 
 function disableButton(btn) {
-    btn.classList.add('disabled');
+    btn.classList.add("disabled");
 }
 
 function enableButton(btn) {
-    btn.classList.remove('disabled');
+    btn.classList.remove("disabled");
 }
-
 
 function addStrikes() {
     if (!selecionDeEquipos) {
-
         const team1 = teamspostproceded[0];
         const team2 = teamspostproceded[1];
         const team3 = teamspostproceded[2];
@@ -164,12 +162,14 @@ function addStrikes() {
             team3.strikes++;
             sendWebSocketMessage({
                 event: "strike",
-                body: { strikes: team3.strikes }
+                body: { strikes: team3.strikes },
             });
         }
         if (team1.strikes >= 3 && team2.strikes >= 1 && team3.strikes >= 1) {
             renderTeamById(team1.id_local);
-            asignRondaScoreToFirst();
+            console.log("Automatic termination case strike all ")
+            console.log(currentRonda);
+            updateWinner(teamspostproceded[0], currentRonda.current_score);
             rondaTerminated = true;
             resetRound();
             return;
@@ -178,7 +178,7 @@ function addStrikes() {
             team2.strikes++;
             sendWebSocketMessage({
                 event: "strike",
-                body: { strikes: team2.strikes }
+                body: { strikes: team2.strikes },
             });
         }
         if (team2.strikes >= 1 && team3.strikes < 1) {
@@ -189,7 +189,7 @@ function addStrikes() {
             team1.strikes++;
             sendWebSocketMessage({
                 event: "strike",
-                body: { strikes: team1.strikes }
+                body: { strikes: team1.strikes },
             });
         }
         if (team1.strikes >= 3 && team2.strikes < 1) {
@@ -200,7 +200,7 @@ function addStrikes() {
         renderTeamById(teamspostproceded[renderIndex].id_local);
         sendWebSocketMessage({
             event: "strike",
-            body: { strikes: 1 }
+            body: { strikes: 1 },
         });
         if (renderIndex >= 2) {
             teamspostproceded.sort((a, b) => b.current_score - a.current_score);
@@ -209,22 +209,17 @@ function addStrikes() {
             return;
         }
     }
+
+    console.log("current ronda " + currentRonda);
+    console.log("current ronda lenght" + currentRonda.answers.length);
 }
 
-function addScore(id, elementToRemove) {
-    const ans = currentRonda.answers.find(t => t.id === Number(id));
-    currentRonda.score = (currentRonda.score || 0) + ans.score;
+function addScore(id) {
 
-    if (elementToRemove && elementToRemove.parentNode) {
-        elementToRemove.style.pointerEvents = 'none';
-        elementToRemove.style.color = "#ff0080";
-        elementToRemove.style.transition = 'opacity 1s ease-out';
-        elementToRemove.style.opacity = '0';
-
-        setTimeout(() => {
-            elementToRemove.remove();
-        }, 1000);
-    }
+    const ans = currentRonda.answers.find((t) => t.id === Number(id));
+    currentRonda.current_score += ans.score;
+    console.log("------------------------ score: " + JSON.stringify(currentRonda.current_score));
+    console.log("current ronda " + currentRonda);
 
     if (selecionDeEquipos) {
         teamspostproceded[renderIndex].current_score += ans.score;
@@ -239,6 +234,7 @@ function addScore(id, elementToRemove) {
             teamspostproceded.sort((a, b) => b.current_score - a.current_score);
             renderTeamById(teamspostproceded[0].id_local);
             selecionDeEquipos = false;
+
             return;
         }
         currentTeam = teamspostproceded[renderIndex];
@@ -246,55 +242,65 @@ function addScore(id, elementToRemove) {
     }
 }
 
-function asignRondaScoreToFirst() {
-
-    updateWinner(teamspostproceded[0], currentRonda.score);
-    rondaTerminated = true;
-
-}
 
 function automaticRondaTermination() {
-
     if (!selecionDeEquipos) {
         const team1 = teamspostproceded[0];
         const team2 = teamspostproceded[1];
         const team3 = teamspostproceded[2];
 
         if (team2.strikes >= 1 && team3.strikes < 1) {
-
-            updateWinner(teamspostproceded[2], currentRonda.score);
+            updateWinner(teamspostproceded[2], currentRonda.current_score);
             rondaTerminated = true;
             resetRound();
         }
 
         if (team1.strikes >= 3 && team2.strikes < 1) {
-
-            updateWinner(teamspostproceded[1], currentRonda.score);
+            updateWinner(teamspostproceded[1], currentRonda.current_score);
             rondaTerminated = true;
             resetRound();
         }
+
+
+        if (
+            teamspostproceded[0].strikes < 3 &&
+            contadorpreguntas >= currentRonda.answers.length &&
+            !selecionDeEquipos
+        ) {
+
+
+            updateWinner(teamspostproceded[0], currentRonda.current_score);
+            rondaTerminated = true;
+            resetRound();
+            return;
+
+        }
     }
 
-    if ((teamspostproceded[0].strikes < 3) && (contadorpreguntas >= currentRonda.answers.length) && (!selecionDeEquipos)) {
-
-        updateWinner(teamspostproceded[0], currentRonda.score);
-        rondaTerminated = true;
-        resetRound();
-    }
 }
 
 function terminateGame() {
-    sendWebSocketMessage({
-        event: "win-game",
-        body: null
-    });
+    pressCountWin++;
+    document.documentElement.style.setProperty("--darkcolor", "green");
+
+    setTimeout(() => {
+        document.documentElement.style.setProperty("--darkcolor", "#372c4d");
+    }, 1000);
+
+    if (pressCountWin < 3) {
+    } else {
+        sendWebSocketMessage({
+            event: "win-game",
+            body: null,
+        });
+    }
 }
 
 function hardRoundReset() {
     console.log("Hard-Round-resetting...");
 
     // Reset all team strikes
-    teamspostproceded.forEach(team => {
+    teamspostproceded.forEach((team) => {
         team.strikes = 0;
         team.current_score = 0;
     });
@@ -325,35 +331,32 @@ function hardRoundReset() {
     if (wrongBtn) disableButton(wrongBtn);
     if (TutuownBtn) disableButton(TutuownBtn);
     if (enableBtn) disableButton(enableBtn);
-
 }
 
 function resetRound() {
     console.log("Resetting round...");
 
     // Reset all team strikes
-    teamspostproceded.forEach(team => {
+    teamspostproceded.forEach((team) => {
         team.strikes = 0;
         team.current_score = 0;
     });
 
-    teamsprepocesed = [];
-    teamspostproceded = [];
+    // teamsprepocesed = [];
+    // teamspostproceded = [];
 
     // Reset round state (but NOT contadorpreguntas - keep answered questions)
-    rondaTerminated = false;
-    if (currentRonda) {
-        currentRonda.score = 0;
-    }
-    currentRonda = null;
 
-    // Reset team selection state
+    if (currentRonda) currentRonda.score = 0;
+
     selecionDeEquipos = true;
     renderIndex = 0;
     currentTeam = null;
-
     contadorpreguntas = 0;
-    isRoundShown = false; // Reset show state
+    isRoundShown = false;
+    pressCounthard = 0;
+    pressCountsoft = 0;
+    pressCountWin = 0;
 
     // Disable buttons at the beginning
     const countdownBtn = document.getElementById("countdownBtn");
@@ -371,7 +374,7 @@ function resetRound() {
 
 function clearRespuestas() {
     const contenedor = document.querySelector(".contendorespuestas");
-    contenedor.innerHTML = '';
+    contenedor.innerHTML = "";
 }
 
 function renderRespuestas() {
@@ -383,7 +386,7 @@ function renderRespuestas() {
     const contenedor = document.querySelector(".contendorespuestas");
 
     // Clear existing answers efficiently
-    contenedor.innerHTML = '';
+    contenedor.innerHTML = "";
 
     // Create answer elements using DocumentFragment for better performance
     const fragment = document.createDocumentFragment();
@@ -396,10 +399,22 @@ function renderRespuestas() {
 
             p.addEventListener("click", (event) => {
                 if (!rondaTerminated) {
-                    addScore(answer.id, event.currentTarget);
+                    addScore(answer.id);
                     contadorpreguntas++;
-
                 }
+                console.log({ contadorpreguntas });
+                console.log("ans lenght " + currentRonda.answers.length);
+                const element = event.currentTarget;
+
+                element.style.pointerEvents = "none";
+                element.style.color = "#ff0080";
+                element.style.transition = "opacity 1s ease-out";
+                element.style.opacity = "0";
+
+                setTimeout(() => {
+                    element.remove();
+                }, 1000);
+
 
                 sendWebSocketMessage({
                     event: "show-answer",
@@ -407,11 +422,12 @@ function renderRespuestas() {
                         round: {
                             uuidv4: currentRonda.uuidv4,
                             answer: {
-                                id: answer.id
-                            }
-                        }
-                    }
+                                id: answer.id,
+                            },
+                        },
+                    },
                 });
+                console.log({ selecionDeEquipos });
                 automaticRondaTermination();
             });
 
@@ -427,9 +443,13 @@ let rounds = [];
 let currentRonda = null;
 let wrongBtn;
 
+let pressCountWin = 0;
+let pressCounthard = 0;
+let pressCountsoft = 0;
 async function initController() {
     while (app.rounds.length === 0) await sleep(400);
-    rounds = app.rounds
+    rounds = app.rounds;
+
     const leftquestionBtn = document.getElementById("leftquestionBtn");
     const rightquestionshowBtn = document.getElementById("rightquestionshowBtn");
     const showBtn = document.getElementById("showBtn");
@@ -440,7 +460,6 @@ async function initController() {
     wrongBtn = document.getElementById("wrongBtn");
     const enableBtn = document.getElementById("enableBtn");
     const hardResetBtn = document.getElementById("hardResetBtn");
-    let pressCount = 0;
 
     wrongBtn.addEventListener("click", addStrikes);
     setQuestion(currentQuestionIndex);
@@ -451,10 +470,10 @@ async function initController() {
     showBtn.addEventListener("click", () => {
         enableButton(enableBtn);
         isRoundShown = true;
-        renderRespuestas(); 
+        renderRespuestas();
         sendWebSocketMessage({
             event: "show-round",
-            body: { round: { uuidv4: currentRonda.uuidv4 } }
+            body: { round: { uuidv4: currentRonda.uuidv4 } },
         });
     });
 
@@ -464,39 +483,24 @@ async function initController() {
     TutuownBtn.addEventListener("click", () => {
         sendWebSocketMessage({
             event: "tutu-sound",
-            body: null
+            body: null,
         });
     });
 
     if (resetBtn) {
         resetBtn.addEventListener("click", () => {
-
-            pressCount++;
+            pressCountsoft++;
             document.documentElement.style.setProperty("--darkcolor", "white");
 
             setTimeout(() => {
                 document.documentElement.style.setProperty("--darkcolor", "#372c4d");
             }, 1000);
 
-
-            if (pressCount < 2) {
-
+            if (pressCountsoft < 2) {
+            } else {
+                hardRoundReset();
             }
-            else {
-                hardRoundReset()
-            }
-
-
-        }
-
-
-
-
-
-
-
-
-        );
+        });
     }
 
     enableBtn.addEventListener("click", function () {
@@ -505,36 +509,28 @@ async function initController() {
         enableButton(TutuownBtn);
         sendWebSocketMessage({
             event: "enable-buttons",
-            body: { round: { uuidv4: currentRonda.uuidv4 } }
+            body: { round: { uuidv4: currentRonda.uuidv4 } },
         });
-
     });
 
-
-
-
     hardResetBtn.addEventListener("click", () => {
-        pressCount++;
+        pressCounthard++;
         document.documentElement.style.setProperty("--darkcolor", "red");
 
         setTimeout(() => {
             document.documentElement.style.setProperty("--darkcolor", "#372c4d");
         }, 1000);
 
-
-        if (pressCount > 5) {
+        if (pressCounthard > 5) {
             console.log("HARD RESET TRIGGERED!");
-            pressCount = 0;
+            pressCounthard = 0;
             sendWebSocketMessage({
                 event: "hard-reset",
-                body: null
+                body: null,
             });
         }
     });
 
 }
 
-export {
-    initController,
-    setRoundParticipants
-}
+export { initController, setRoundParticipants };

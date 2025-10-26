@@ -59,7 +59,7 @@ const handleOnMessage=function(e){
     // EVENTOS DEL CONTROLADOR
     // Evento que contiene los primeros 3 participantes 
     else if(event === "round-participants"){
-        const {participants}=body;
+        const { participants } = body;
         setRoundParticipants(participants);
     }
     else if(event === "teams-setup-complete"){
