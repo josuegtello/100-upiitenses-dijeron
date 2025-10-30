@@ -187,6 +187,7 @@ function addStrikes() {
 
         if (team1.strikes < 3) {
             team1.strikes++;
+            console.log(` strikes  ${team1.strikes}`)
             sendWebSocketMessage({
                 event: "strike",
                 body: { strikes: team1.strikes },

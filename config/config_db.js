@@ -25,114 +25,138 @@ db.rounds.drop()
 db.rounds.insertMany([
     {
         id: 1,
-        question: "pregunta 1",
+        question: "Principios de bioética",
         answers: [
-            { id: 1, text: "Respuesta 101", score: 65 },
-            { id: 2, text: "Respuesta 201", score: 60 },
-            { id: 3, text: "Respuesta 301", score: 58 },
-            { id: 4, text: "Respuesta 401", score: 44 },
-            { id: 5, text: "Respuesta 501", score: 32 },
-        ],
+            { id: 1, text: "Autonomía", score: 40 },
+            { id: 2, text: "Beneficencia", score: 30 },
+            { id: 3, text: "No maleficencia", score: 20 },
+            { id: 4, text: "Justicia", score: 10 }
+        ]
     },
     {
         id: 2,
-        question: "pregunta 2",
+        question: "Campos de bioética",
         answers: [
-            { id: 1, text: "Respuesta 102", score: 67 },
-            { id: 2, text: "Respuesta 202", score: 62 },
-            { id: 3, text: "Respuesta 302", score: 59 },
-            { id: 4, text: "Respuesta 402", score: 46 },
-            { id: 5, text: "Respuesta 502", score: 35 },
-        ],
+            { id: 1, text: "Genética", score: 40 },
+            { id: 2, text: "Medio ambiente", score: 30 },
+            { id: 3, text: "Procreación", score: 20 },
+            { id: 4, text: "Centros salud", score: 10 }
+        ]
     },
     {
         id: 3,
-        question: "pregunta 3",
+        question: "Principios sustentabilidad",
         answers: [
-            { id: 1, text: "Respuesta 103", score: 70 },
-            { id: 2, text: "Respuesta 203", score: 65 },
-            { id: 3, text: "Respuesta 303", score: 60 },
-            { id: 4, text: "Respuesta 403", score: 50 },
-            { id: 5, text: "Respuesta 503", score: 38 },
-        ],
+            { id: 1, text: "Equidad intergen", score: 40 },
+            { id: 2, text: "Prevención", score: 30 },
+            { id: 3, text: "Circularidad", score: 20 },
+            { id: 4, text: "Quien contamina", score: 10 }
+        ]
     },
     {
         id: 4,
-        question: "pregunta 4",
+        question: "Aplicaciones ingeniería",
         answers: [
-            { id: 1, text: "Respuesta 104", score: 72 },
-            { id: 2, text: "Respuesta 204", score: 68 },
-            { id: 3, text: "Respuesta 304", score: 63 },
-            { id: 4, text: "Respuesta 404", score: 52 },
-            { id: 5, text: "Respuesta 504", score: 40 },
-        ],
+            { id: 1, text: "Innov. respons.", score: 40 },
+            { id: 2, text: "Energías limpia", score: 30 },
+            { id: 3, text: "Diseño ecológic", score: 20 },
+            { id: 4, text: "Innov. tecnolog", score: 10 }
+        ]
     },
     {
         id: 5,
-        question: "pregunta 5",
+        question: "Eventos históricos",
         answers: [
-            { id: 1, text: "Respuesta 105", score: 75 },
-            { id: 2, text: "Respuesta 205", score: 70 },
-            { id: 3, text: "Respuesta 305", score: 65 },
-            { id: 4, text: "Respuesta 405", score: 55 },
-            { id: 5, text: "Respuesta 505", score: 42 },
-        ],
+            { id: 1, text: "Código Núremb.", score: 30 },
+            { id: 2, text: "Potter 1971", score: 25 },
+            { id: 3, text: "Brundtland 1987", score: 20 },
+            { id: 4, text: "Juicio Núremb.", score: 15 },
+            { id: 5, text: "Estocolmo 1972", score: 10 }
+        ]
     },
     {
         id: 6,
-        question: "pregunta 6",
+        question: "Etimología bioética",
         answers: [
-            { id: 1, text: "Respuesta 106", score: 77 },
-            { id: 2, text: "Respuesta 206", score: 72 },
-            { id: 3, text: "Respuesta 306", score: 68 },
-            { id: 4, text: "Respuesta 406", score: 57 },
-            { id: 5, text: "Respuesta 506", score: 45 },
-        ],
+            { id: 1, text: "BIOS (vida)", score: 60 },
+            { id: 2, text: "ETHOS (ética)", score: 40 }
+        ]
     },
     {
         id: 7,
-        question: "pregunta 7",
+        question: "Etimología sustentabilidad",
         answers: [
-            { id: 1, text: "Respuesta 107", score: 80 },
-            { id: 2, text: "Respuesta 207", score: 74 },
-            { id: 3, text: "Respuesta 307", score: 70 },
-            { id: 4, text: "Respuesta 407", score: 60 },
-            { id: 5, text: "Respuesta 507", score: 48 },
-        ],
+            { id: 1, text: "SUBS (debajo)", score: 50 },
+            { id: 2, text: "TENERE (sujetar)", score: 35 },
+            { id: 3, text: "-bilidad", score: 15 }
+        ]
     },
     {
         id: 8,
-        question: "pregunta 8",
+        question: "DILEMA: Innovación vs Ambiente",
         answers: [
-            { id: 1, text: "Respuesta 108", score: 82 },
-            { id: 2, text: "Respuesta 208", score: 76 },
-            { id: 3, text: "Respuesta 308", score: 72 },
-            { id: 4, text: "Respuesta 408", score: 62 },
-            { id: 5, text: "Respuesta 508", score: 50 },
-        ],
+            { id: 1, text: "Beneficencia", score: 30 },
+            { id: 2, text: "Resp. socioamb", score: 25 },
+            { id: 3, text: "Equidad interge", score: 20 },
+            { id: 4, text: "Innov. respons.", score: 15 },
+            { id: 5, text: "Prevención", score: 10 }
+        ]
     },
     {
         id: 9,
-        question: "pregunta 9",
+        question: "DILEMA: Clonación Humana",
         answers: [
-            { id: 1, text: "Respuesta 109", score: 85 },
-            { id: 2, text: "Respuesta 209", score: 78 },
-            { id: 3, text: "Respuesta 309", score: 74 },
-            { id: 4, text: "Respuesta 409", score: 64 },
-            { id: 5, text: "Respuesta 509", score: 52 },
-        ],
+            { id: 1, text: "Autonomía", score: 30 },
+            { id: 2, text: "No maleficencia", score: 25 },
+            { id: 3, text: "Justicia", score: 20 },
+            { id: 4, text: "Reg. genética", score: 15 },
+            { id: 5, text: "Beneficencia", score: 10 }
+        ]
     },
     {
         id: 10,
-        question: "pregunta 10",
+        question: "DILEMA: Eutanasia",
         answers: [
-            { id: 1, text: "Respuesta 110", score: 88 },
-            { id: 2, text: "Respuesta 210", score: 80 },
-            { id: 3, text: "Respuesta 310", score: 76 },
-            { id: 4, text: "Respuesta 410", score: 66 },
-            { id: 5, text: "Respuesta 510", score: 55 },
-        ],
+            { id: 1, text: "Autonomía", score: 30 },
+            { id: 2, text: "No maleficencia", score: 25 },
+            { id: 3, text: "Beneficencia", score: 20 },
+            { id: 4, text: "Reg. centros", score: 15 },
+            { id: 5, text: "Justicia", score: 10 }
+        ]
     },
+    {
+        id: 11,
+        question: "DILEMA: Fábrica Contaminante",
+        answers: [
+            { id: 1, text: "Quien contamina", score: 30 },
+            { id: 2, text: "Prevención", score: 25 },
+            { id: 3, text: "Justicia", score: 20 },
+            { id: 4, text: "Innov. respons.", score: 15 },
+            { id: 5, text: "Circularidad", score: 10 }
+        ]
+    },
+    {
+        id: 12,
+        question: "DILEMA: Experimentación Animal",
+        answers: [
+            { id: 1, text: "Beneficencia", score: 30 },
+            { id: 2, text: "No maleficencia", score: 25 },
+            { id: 3, text: "Justicia", score: 20 },
+            { id: 4, text: "Regulación", score: 15 },
+            { id: 5, text: "Innov. respons.", score: 10 }
+        ]
+    },
+    {
+        id: 13,
+        question: "DILEMA: Energía Nuclear",
+        answers: [
+            { id: 1, text: "Equidad interge", score: 30 },
+            { id: 2, text: "Prevención", score: 25 },
+            { id: 3, text: "Energías limpia", score: 20 },
+            { id: 4, text: "Resp. socioamb.", score: 15 },
+            { id: 5, text: "Innov. tecnolog", score: 10 }
+        ]
+    }
 ])
 
 db.rounds.find()
